@@ -1,481 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silvia's Pallete</title>
+    <title>Silvia's Pallete - Win95 Edition</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            /* MODIFIED: Radial gradient background */
-            background-image: radial-gradient(ellipse at center, silver 0%, navy 100%);
-            color: white; /* MODIFIED: Default text color for better readability on gradient */
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .container {
-            max-width: 1200px;
-            width: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        
-        h1 {
-            text-align: center;
-            /* MODIFIED: Changed heading color for visibility on new background */
-            color: #FFFFFF; /* Was #3c33be */
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Optional: adds depth */
-            margin-bottom: 20px;
-            font-family:monospace ;
-        }
-        
-        .video-container {
-            position: relative;
-            width: 100%;
-            max-width: 640px;
-            margin: 20px auto;
-            overflow: hidden;
-            border-radius: 10px;
-            border: 3px solid #ADD8E6; /* Light blue border, adjust as needed */
-            background-color: #000;
-        }
-        
-        #video {
-            width: 100%;
-            height: auto;
-            display: block;
-            border-radius: 7px;
-        }
-        
-        #countdown {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 100px;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.6);
-            width: 150px;
-            height: 150px;
-            text-align: center;
-            line-height: 150px;
-            border-radius: 50%;
-            display: none;
-            font-weight: bold;
-        }
-        
-        .controls-section {
-            margin: 20px auto;
-            width: 100%;
-            max-width: 640px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .filter-preview {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .filter-option {
-            cursor: pointer;
-            text-align: center;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            padding: 8px;
-            transition: all 0.3s ease;
-            background-color: #fff; /* Background for filter options */
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .filter-option:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-        }
-        
-        .filter-option.selected {
-            border-color: #ADD8E6; /* Light blue selection, adjust as needed */
-            background-color: #e0f7ff; 
-        }
-        
-        .filter-option img {
-            width: 70px;
-            height: 52px;
-            border-radius: 5px;
-            object-fit: cover;
-        }
-        
-        .filter-label {
-            margin-top: 5px;
-            font-size: 13px;
-            color: #333; /* Text color for labels inside filter options */
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        
-        button {
-            background-color: #000080; /* Navy button */
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            font-size: 14px;
-        }
-        
-        button:hover {
-            background-color: #0000cd; /* MediumBlue hover */
-            transform: translateY(-1px);
-        }
-        button:active {
-            transform: translateY(0px);
-        }
-        
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        #collageControlsWrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .options-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            width: 100%;
-        }
-
-        .collage-layout-section, .collage-theme-section, .custom-background-section {
-            padding: 15px;
-            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white background for sections */
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex-grow: 1;
-            min-width: 280px;
-            max-width: 400px;
-            box-sizing: border-box;
-        }
-        
-        .section-title {
-            margin-top: 0;
-            color: #000080; /* Navy section titles */
-            font-size: 16px;
-            margin-bottom: 10px;
-            text-align: center;
-            font-weight: 600;
-        }
-        
-        .layout-options, .theme-options, .custom-bg-options {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        .theme-option {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: transform 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .theme-option:hover {
-            transform: scale(1.1);
-        }
-        
-        .theme-option.selected {
-            border-color: #000; /* Black border for selected theme */
-            box-shadow: 0 0 5px rgba(0,0,0,0.3);
-        }
-        
-        .theme-navy { background-color: navy; }
-        .theme-pink { background-color: #FFC0CB; }
-        .theme-blue { background-color: #ADD8E6; }
-        .theme-yellow { background-color: #FFFACD; }
-        .theme-purple { background-color: #E6E6FA; }
-        .theme-green { background-color: #90EE90; }
-        .theme-teal { background-color: teal; }
-        .theme-coral { background-color: coral; }
-        .theme-silver { background-color: silver; }
-        .theme-gold { background-color: gold; }
-
-        /* MODIFIED: Styles for Custom Color Picker Button */
-        .custom-color-picker-button {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid #ccc; /* Initial border, JS can update this with selected color */
-            background-image: url('image_12348b.jpg'); /* Ensure this path is correct */
-            background-size: cover;
-            background-position: center;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            vertical-align: middle;
-            margin-left: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            overflow: hidden;
-        }
-        .custom-color-picker-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .custom-color-picker-button .dropper-icon-svg {
-            width: 16px; /* Adjust size as needed */
-            height: 16px; /* Adjust size as needed */
-            fill: black; /* Color of the SVG dropper */
-        }
-
-        #themeColorPicker { /* The actual input type="color" */
-            display: none !important; /* Hide it */
-            /* Alternative: position off-screen if display:none causes issues with .click() in rare cases */
-            /* position: absolute; left: -9999px; top: -9999px; */
-        }
-        
-        #collageStatus {
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            color: #FFFFFF; 
-            margin: 10px 0;
-            display: none;
-            background-color: rgba(0, 0, 128, 0.7); 
-            padding: 8px;
-            border-radius: 5px;
-        }
-        
-        .photo-gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-            padding: 10px;
-        }
-        
-        .photo-container {
-            position: relative;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            background-color: #fff;
-        }
-        
-        .photo-container:hover {
-            transform: scale(1.03);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        .captured-photo {
-            display: block;
-            width: 180px;
-            height: 240px;
-            object-fit: cover;
-            cursor: pointer;
-        }
-        
-        .delete-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background-color: rgba(255, 0, 0, 0.8);
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 18px;
-            opacity: 0;
-            transition: opacity 0.3s ease, background-color 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.5);
-        }
-        .delete-btn:hover {
-            background-color: rgba(220, 0, 0, 1);
-        }
-        
-        .photo-container:hover .delete-btn {
-            opacity: 1;
-        }
-        
-        #mainCanvas {
-            display: none;
-        }
-        
-        .flash {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: white;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 9999;
-            transition: opacity 0.1s ease;
-        }
-
-        #customBgInput {
-            display: none;
-        }
-        #customBgPreviewContainer {
-            width: 70px;
-            height: 52px;
-            border: 2px dashed navy; 
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            overflow: hidden;
-            background-color: #f0f0f0;
-        }
-        #customBgPreviewContainer img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        #clearCustomBg {
-            background-color: #ff4b4b;
-            font-size: 12px;
-            padding: 8px 10px;
-        }
-        #clearCustomBg:hover {
-            background-color: #e03030;
-        }
-
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Silvia's Pallete</h1>
-        
-        <div class="video-container">
-            <video id="video" autoplay playsinline></video>
-            <div id="countdown"></div>
+    <div class="overall-container win95-window">
+        <div class="win95-title-bar">
+            <span class="win95-title-bar-text">Silvia's Pallete - Win95 Cam</span>
+            <div class="win95-title-bar-controls">
+                <button class="win95-button title-bar-button" aria-label="Minimize" disabled>_</button>
+                <button class="win95-button title-bar-button" aria-label="Maximize" disabled>&#9633;</button>
+                <button class="win95-button title-bar-button" aria-label="Close" disabled>X</button>
+            </div>
         </div>
-        
-        <div class="controls-section">
-            <div class="filter-preview">
-                <div class="filter-option selected" data-filter="none">
-                    <img id="preview-none" alt="Normal">
-                    <div class="filter-label">Normal</div>
+
+        <div class="main-grid-container">
+            <div id="grid-item-camera-preview" class="grid-item win95-group-box" data-title="Camera Preview">
+                <div class="video-container">
+                    <video id="video" autoplay playsinline></video>
+                    <div id="countdown"></div>
                 </div>
-                <div class="filter-option" data-filter="grayscale">
+                <div class="filter-preview-minimal">
+                    <div class="filter-option selected win95-button" data-filter="none">
+                        <img id="preview-none" alt="Normal">
+                        <div class="filter-label">Normal</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="grid-item-take-photo" class="grid-item no-padding">
+                <button id="captureBtn" class="grid-button win95-button full-height-button">Take Photo</button>
+            </div>
+
+            <div id="grid-item-timer" class="grid-item no-padding">
+                <button id="timerBtn" class="grid-button win95-button full-height-button">3s Timer</button>
+            </div>
+
+            <div id="grid-item-download-clear" class="grid-item no-padding">
+                <button id="downloadBtn" class="grid-button win95-button full-height-button" disabled>Download All</button>
+                <button id="clearBtn" class="grid-button win95-button full-height-button" disabled>Clear All</button>
+            </div>
+
+            <div id="grid-item-collage-preview" class="grid-item win95-group-box" data-title="Collage Preview">
+                <canvas id="liveCollagePreviewCanvas"></canvas>
+                <div id="collageStatus" class="win95-status-bar-field">Ảnh 1 / 4</div>
+            </div>
+
+            <div id="grid-item-photo-layout" class="grid-item win95-group-box" data-title="Photo Layout">
+                <div class="collage-layout-section">
+                    <div class="layout-options">
+                        <button id="start1x2" class="win95-button">2 Photos (1 Col)</button>
+                        <button id="start1x3" class="win95-button">3 Photos (1 Col)</button>
+                        <button id="start1x4" class="win95-button">4 Photos (1 Col)</button>
+                        <button id="start2x2" class="win95-button">4 Photos (2x2)</button>
+                        <button id="start2x3" class="win95-button">6 Photos (2x3)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="grid-item-theme-color" class="grid-item win95-group-box" data-title="Theme Color">
+                <div class="collage-theme-section">
+                    <div class="theme-options">
+                        <div class="theme-option theme-navy" data-theme="navy" title="Navy"></div>
+                        <div class="theme-option theme-pink" data-theme="pink" title="Pink"></div>
+                        <div class="theme-option theme-blue" data-theme="blue" title="Light Blue"></div>
+                        <div class="theme-option theme-yellow" data-theme="yellow" title="Yellow"></div>
+                        <div class="theme-option theme-purple" data-theme="purple" title="Purple"></div>
+                        <div class="theme-option theme-green" data-theme="green" title="Green"></div>
+                        <div class="theme-option theme-teal" data-theme="teal" title="Teal"></div>
+                        <div class="theme-option theme-coral" data-theme="coral" title="Coral"></div>
+                        <div class="theme-option theme-silver" data-theme="silver" title="Silver"></div>
+                        <div class="theme-option theme-gold" data-theme="gold" title="Gold"></div>
+                        
+                        <div id="customColorPickerButton" class="custom-color-picker-button win95-button" title="Custom Color">
+                            🎨
+                        </div>
+                        <input type="color" id="themeColorPicker">
+                    </div>
+                </div>
+            </div>
+
+            <div id="grid-item-custom-background" class="grid-item win95-group-box" data-title="Custom Background">
+                <div class="custom-background-section">
+                    <div class="custom-bg-options">
+                         <div id="customBgPreviewContainer" title="Click to choose custom background image">
+                            <img id="customBgPreviewImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E" alt="Custom BG Preview">
+                        </div>
+                        <button id="triggerCustomBgInput" class="win95-button">Choose...</button>
+                        <button id="clearCustomBg" class="win95-button" style="display:none;">Clear</button>
+                    </div>
+                    <input type="file" id="customBgInput" accept="image/*">
+                </div>
+            </div>
+
+            <div id="grid-item-grayscale-filter" class="grid-item win95-group-box" data-title="Filter">
+                 <div class="filter-option win95-button" data-filter="grayscale" id="grayscaleFilterStandalone">
                     <img id="preview-grayscale" alt="Grayscale">
                     <div class="filter-label">Grayscale</div>
                 </div>
-                <div class="filter-option" data-filter="sepia">
-                    <img id="preview-sepia" alt="Sepia">
-                    <div class="filter-label">Sepia</div>
-                </div>
-                <div class="filter-option" data-filter="invert">
-                    <img id="preview-invert" alt="Invert">
-                    <div class="filter-label">Invert</div>
-                </div>
             </div>
-            
-            <div id="normalControls" class="controls">
-                <button id="captureBtn">Take Photo</button>
-                <button id="timerBtn">3s Timer</button>
-                <button id="downloadBtn" disabled>Download All</button>
-                <button id="clearBtn" disabled>Clear All</button>
-            </div>
-            
-            <div id="collageControlsWrapper"> 
-                <div class="collage-layout-section">
-                    <h3 class="section-title">Photo Layout</h3>
-                    <div class="layout-options">
-                        <button id="start1x2">2 Photos (1 Col)</button>
-                        <button id="start1x3">3 Photos (1 Col)</button>
-                        <button id="start1x4">4 Photos (1 Col)</button>
-                        <button id="start2x2">4 Photos (2x2)</button>
-                        <button id="start2x3">6 Photos (2x3)</button>
-                    </div>
-                </div>
-                
-                <div class="options-group"> <div class="collage-theme-section">
-                        <h3 class="section-title">Theme Color</h3>
-                        <div class="theme-options">
-                            <div class="theme-option theme-navy" data-theme="navy"></div>
-                            <div class="theme-option theme-pink" data-theme="pink"></div>
-                            <div class="theme-option theme-blue" data-theme="blue"></div>
-                            <div class="theme-option theme-yellow" data-theme="yellow"></div>
-                            <div class="theme-option theme-purple" data-theme="purple"></div>
-                            <div class="theme-option theme-green" data-theme="green"></div>
-                            <div class="theme-option theme-teal" data-theme="teal"></div>
-                            <div class="theme-option theme-coral" data-theme="coral"></div>
-                            <div class="theme-option theme-silver" data-theme="silver"></div>
-                            <div class="theme-option theme-gold" data-theme="gold"></div>
-                            
-                            {/* MODIFIED: Custom Color Picker Button and Hidden Input */}
-                            <div id="customColorPickerButton" class="custom-color-picker-button" title="Custom Theme Color">
-                                <svg class="dropper-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <path d="M12.52.27a1.46,1.46,0,0,0-2,0L1.74,9.09a1.46,1.46,0,0,0,0,2l6.36,6.36a1.46,1.46,0,0,0,2,0l8.78-8.78a1.46,1.46,0,0,0,0-2ZM3.62,10.12,12,1.74l3.54,3.54L6.17,14.62Zm10,4.46L8.26,19.83l-1-1L12,14.12l3.17,3.17a.49.49,0,0,1,0,.69l-.69.69a.49.49,0,0,1-.69,0L3.17,8.12,9.09,2.2,19.83,13Z"/>
-                                    <path d="M21.07,5.59,18.41,3a.48.48,0,0,0-.69,0L14.17,6.5,17.5,9.83l3.57-3.57a.49.49,0,0,0,0-.69Z"/>
-                                </svg>
-                            </div>
-                            <input type="color" id="themeColorPicker"> {/* Style to hide is in CSS */}
-                        </div>
-                    </div>
-
-                    <div class="custom-background-section">
-                        <h3 class="section-title">Custom Background</h3>
-                        <div class="custom-bg-options">
-                             <div id="customBgPreviewContainer" title="Click to choose custom background image">
-                                <img id="customBgPreviewImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E" alt="Custom BG Preview">
-                            </div>
-                            <button id="triggerCustomBgInput">Choose</button>
-                            <button id="clearCustomBg" style="display:none;">Clear</button>
-                        </div>
-                        <input type="file" id="customBgInput" accept="image/*">
-                    </div>
-                </div>
-            </div>
-            
-            <div id="collageStatus">Taking photo 1 of 4</div>
         </div>
         
-        <div class="photo-gallery" id="photoGallery"></div>
+        <div class="photo-gallery-container win95-group-box" data-title="Captured Photos & Collages">
+            <div class="photo-gallery" id="photoGallery">
+            </div>
+        </div>
         
-        <canvas id="mainCanvas"></canvas> </div>
-    
-    <div class="flash" id="flash"></div>
+        <canvas id="mainCanvas"></canvas> 
+        <div class="flash" id="flash"></div>
+
+        <div class="win95-status-bar">
+            <div class="win95-status-bar-field" id="appStatusMessage">Ready</div>
+            <div class="win95-status-bar-field" id="currentTime"></div>
+        </div>
+    </div>
     
     <script src="index4.js"></script>
 </body>
