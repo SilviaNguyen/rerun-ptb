@@ -167,17 +167,14 @@ function drawLiveCollageLayoutPreview() {
     const canvasHeight = liveCollagePreviewCanvas.height;
     liveCollagePreviewCtx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // MODIFIED: Always draw background first (custom image or active theme color)
     if (userSelectedCustomBgImage && userSelectedCustomBgImage.complete) {
         try {
             drawImageCover(liveCollagePreviewCtx, userSelectedCustomBgImage, 0, 0, canvasWidth, canvasHeight);
         } catch (e) {
-            // Fallback to theme color if custom image fails to draw
             liveCollagePreviewCtx.fillStyle = getThemeColorValue(activeCollageColorTheme);
             liveCollagePreviewCtx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
     } else {
-        // No custom image, use active theme color
         liveCollagePreviewCtx.fillStyle = getThemeColorValue(activeCollageColorTheme);
         liveCollagePreviewCtx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
@@ -217,13 +214,14 @@ function drawLiveCollageLayoutPreview() {
             };
             img.src = collagePhotos[i];
         } else {
-            liveCollagePreviewCtx.fillStyle = "rgba(246, 220, 172, 0.6)"; // Light Beige placeholder (semi-transparent)
+            liveCollagePreviewCtx.fillStyle = "rgba(246, 220, 172, 0.6)"; 
             liveCollagePreviewCtx.fillRect(x, y, slotW, slotH);
             liveCollagePreviewCtx.strokeStyle = "rgba(1, 32, 78, 0.7)"; 
             liveCollagePreviewCtx.lineWidth = 2;
             liveCollagePreviewCtx.strokeRect(x, y, slotW, slotH);
             liveCollagePreviewCtx.fillStyle = "#01204E"; 
-            liveCollagePreviewCtx.font = `bold ${Math.min(slotW, slotH) * 0.2}px Arial`; 
+            // MODIFIED: Use Pixelify Sans for placeholder number
+            liveCollagePreviewCtx.font = `bold ${Math.min(slotW, slotH) * 0.2}px 'Pixelify Sans', Arial`; 
             liveCollagePreviewCtx.textAlign = "center";
             liveCollagePreviewCtx.textBaseline = "middle";
             liveCollagePreviewCtx.fillText((i + 1).toString(), x + slotW / 2, y + slotH / 2);
@@ -263,8 +261,6 @@ function drawCurrentImageInSlideshow() {
     const canvasHeight = liveCollagePreviewCanvas.height;
     liveCollagePreviewCtx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // MODIFIED: Draw theme background before drawing slideshow image
-    // This ensures if the image is transparent or fails to load, the theme color shows.
     if (userSelectedCustomBgImage && userSelectedCustomBgImage.complete) {
         try {
             drawImageCover(liveCollagePreviewCtx, userSelectedCustomBgImage, 0, 0, canvasWidth, canvasHeight);
@@ -280,14 +276,10 @@ function drawCurrentImageInSlideshow() {
     const imgSrc = slideshowImageSources[currentSlideshowIndex];
     const img = new Image();
     img.onload = () => {
-        // Draw the actual slideshow image on top of the theme background
         drawImageCover(liveCollagePreviewCtx, img, 0, 0, canvasWidth, canvasHeight);
     };
     img.onerror = () => {
         console.error("Lỗi tải ảnh cho slideshow:", imgSrc);
-        // Fallback already drawn, so no need to call drawGrid5FallbackBackground here again
-        // unless you want to draw the "Chưa có ảnh nào" text again.
-        // For simplicity, if an image in slideshow fails, it shows the theme color.
     };
     img.src = imgSrc;
 }
@@ -296,7 +288,6 @@ function drawGrid5FallbackBackground(canvasWidth, canvasHeight) {
     if (!liveCollagePreviewCtx) return;
     liveCollagePreviewCtx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // MODIFIED: Always draw background first (custom image or active theme color)
     if (userSelectedCustomBgImage && userSelectedCustomBgImage.complete) {
         try {
             drawImageCover(liveCollagePreviewCtx, userSelectedCustomBgImage, 0, 0, canvasWidth, canvasHeight);
@@ -309,15 +300,14 @@ function drawGrid5FallbackBackground(canvasWidth, canvasHeight) {
         liveCollagePreviewCtx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
 
-    // Text color should contrast with the current background
-    const bgColor = userSelectedCustomBgImage ? '#FFFFFF' : getThemeColorValue(activeCollageColorTheme); // Approximation
-    // Simple check for light vs dark background for text color
+    const bgColor = userSelectedCustomBgImage ? '#FFFFFF' : getThemeColorValue(activeCollageColorTheme); 
     const isDarkBg = bgColor.startsWith('#0') || bgColor === 'navy' || bgColor === '#028391' || bgColor === '#01204E' || bgColor === '#004c55' || bgColor === '#7c2a12' || bgColor === '#4c6a8d';
-    liveCollagePreviewCtx.fillStyle = isDarkBg ? "#F6DCAC" : "#01204E"; // Light Beige on dark, Dark Blue on light
+    liveCollagePreviewCtx.fillStyle = isDarkBg ? "#F6DCAC" : "#01204E"; 
 
-    liveCollagePreviewCtx.font = "bold 16px Arial";
+    // MODIFIED: Use Pixelify Sans for fallback text
+    liveCollagePreviewCtx.font = "bold 16px 'Pixelify Sans', Arial"; 
     liveCollagePreviewCtx.textAlign = "center";
-    const message = photosInGalleryCount === 0 ? "No Photo To Preview" : "Collage Preview";
+    const message = photosInGalleryCount === 0 ? "No Preview Photo" : "Collage Preview";
     liveCollagePreviewCtx.fillText(message, canvasWidth / 2, canvasHeight / 2);
 }
 
@@ -501,11 +491,12 @@ async function generateAndDisplayCollage() {
     const dateTextY = outputCanvasHeight - textAreaHeight + 40; 
     const titleTextY = outputCanvasHeight - textAreaHeight + 80;
 
-    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.03, outputCanvasHeight * 0.03, 28)}px "Dancing Script", cursive`; 
+    // MODIFIED: Use Pixelify Sans for text on generated collage
+    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.03, outputCanvasHeight * 0.03, 28)}px 'Pixelify Sans', 'Dancing Script', cursive`; 
     collageOutputCtx.fillStyle = textColor;
     collageOutputCtx.fillText(new Date().toLocaleDateString(), outputCanvasWidth / 2, dateTextY);
 
-    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.04, outputCanvasHeight * 0.04, 40)}px "Dancing Script", cursive`; 
+    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.04, outputCanvasHeight * 0.04, 40)}px 'Pixelify Sans', 'Dancing Script', cursive`; 
     collageOutputCtx.fillStyle = textColor;
     collageOutputCtx.fillText("Silvia's Palette", outputCanvasWidth / 2, titleTextY);
 
@@ -557,7 +548,7 @@ function setActiveCollageTheme(themeName, customColorValue = null) {
         if (customBgPreviewImage) customBgPreviewImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E"; 
         if (clearCustomBgBtn) clearCustomBgBtn.style.display = 'none';
     }
-    updateGrid5Preview(); // Always update Grid 5 when theme changes
+    updateGrid5Preview(); 
     console.log(`Chủ đề được đặt thành: ${activeCollageColorTheme}. Màu được áp dụng: ${appliedColor}`);
 }
 
@@ -746,7 +737,7 @@ function setupEventListeners() {
                         activeCollageColorTheme = 'custom_bg';
                         document.querySelectorAll('.theme-option.selected').forEach(opt => opt.classList.remove('selected'));
                         if (customColorPickerButton) customColorPickerButton.style.borderColor = '#ccc';
-                        updateGrid5Preview(); // Update Grid 5 with custom BG or its layout preview
+                        updateGrid5Preview(); 
                     };
                     img.onerror = () => alert("Lỗi tải ảnh.");
                     img.src = e.target.result;
