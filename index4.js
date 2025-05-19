@@ -42,11 +42,11 @@ const collageOutputCtx = collageOutputCanvas.getContext('2d');
 // Global Variables
 let stream = null;
 let currentFilter = 'none';
-let photosInGalleryCount = 0; // Tracks items in the main photoGallery div
-let collagePhotos = []; // Stores DataURLs of photos for the current collage
+let photosInGalleryCount = 0; 
+let collagePhotos = []; 
 let currentCollageMode = { totalPhotos: 4, columns: 2, aspectRatio: 3/4 };
 let inCollageMode = false;
-let activeCollageColorTheme = 'navy';
+let activeCollageColorTheme = 'pink'; // 'pink' class now maps to Teal color (#028391)
 let userSelectedCustomBgImage = null;
 const mainCtx = mainCanvas.getContext('2d');
 
@@ -68,12 +68,16 @@ async function init() {
             mainCanvas.width = video.videoWidth;
             mainCanvas.height = video.videoHeight;
             if (liveCollagePreviewCanvas) {
-                // Set initial canvas size based on its displayed size
-                liveCollagePreviewCanvas.width = liveCollagePreviewCanvas.offsetWidth;
-                liveCollagePreviewCanvas.height = liveCollagePreviewCanvas.offsetHeight;
+                if (liveCollagePreviewCanvas.offsetWidth > 0 && liveCollagePreviewCanvas.offsetHeight > 0) {
+                    liveCollagePreviewCanvas.width = liveCollagePreviewCanvas.offsetWidth;
+                    liveCollagePreviewCanvas.height = liveCollagePreviewCanvas.offsetHeight;
+                } else { // Fallback if offsetWidth/Height is 0 initially
+                    liveCollagePreviewCanvas.width = 300; // Default width
+                    liveCollagePreviewCanvas.height = 225; // Default height (4:3)
+                }
             }
             updateFilterPreviews();
-            updateGrid5Preview(); // Initial call for Grid 5
+            updateGrid5Preview(); 
         };
 
         const defaultThemeOption = document.querySelector(`.theme-option[data-theme="${activeCollageColorTheme}"]`);
@@ -82,7 +86,7 @@ async function init() {
             defaultThemeOption.classList.add('selected');
         }
         if (themeColorPicker) {
-            const initialColor = getThemeColorValue(activeCollageColorTheme);
+            const initialColor = getThemeColorValue(activeCollageColorTheme); 
             themeColorPicker.value = initialColor;
             if (customColorPickerButton) customColorPickerButton.style.borderColor = initialColor;
         }
@@ -90,23 +94,15 @@ async function init() {
         const normalFilterOption = document.querySelector('.filter-option[data-filter="none"]');
         if (normalFilterOption) normalFilterOption.classList.add('selected');
 
+        updateWin95Time();
+        setInterval(updateWin95Time, 30000); 
+
     } catch (err) {
         console.error('Lỗi truy cập camera:', err);
+        const appStatusMessage = document.getElementById('appStatusMessage');
+        if (appStatusMessage) appStatusMessage.textContent = "Lỗi camera!";
         alert('Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập.');
     }
-    function updateWin95Time() {
-    const timeField = document.getElementById('currentTime');
-    if (timeField) {
-        const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        timeField.textContent = `${hours}:${minutes}`;
-    }
-    }
-    if (document.getElementById('currentTime')) {
-    updateWin95Time();
-    setInterval(updateWin95Time, 30000); // Cập nhật mỗi 30 giây
-}
 }
 
 // --- Filter Logic ---
@@ -157,9 +153,9 @@ function updateGrid5Preview() {
     }
 
     if (inCollageMode) {
-        drawLiveCollageLayoutPreview();
+        drawLiveCollageLayoutPreview(); 
     } else {
-        startGrid5Slideshow();
+        startGrid5Slideshow(); 
     }
 }
 
@@ -171,21 +167,24 @@ function drawLiveCollageLayoutPreview() {
     const canvasHeight = liveCollagePreviewCanvas.height;
     liveCollagePreviewCtx.clearRect(0, 0, canvasWidth, canvasHeight);
 
+    // MODIFIED: Always draw background first (custom image or active theme color)
     if (userSelectedCustomBgImage && userSelectedCustomBgImage.complete) {
         try {
             drawImageCover(liveCollagePreviewCtx, userSelectedCustomBgImage, 0, 0, canvasWidth, canvasHeight);
         } catch (e) {
+            // Fallback to theme color if custom image fails to draw
             liveCollagePreviewCtx.fillStyle = getThemeColorValue(activeCollageColorTheme);
             liveCollagePreviewCtx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
     } else {
+        // No custom image, use active theme color
         liveCollagePreviewCtx.fillStyle = getThemeColorValue(activeCollageColorTheme);
         liveCollagePreviewCtx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
 
     const { totalPhotos, columns, aspectRatio } = currentCollageMode;
     const rows = Math.ceil(totalPhotos / columns);
-    const availableWidth = canvasWidth * 0.9; // Use 90% for content area
+    const availableWidth = canvasWidth * 0.9; 
     const availableHeight = canvasHeight * 0.9;
     let previewSlotWidth = availableWidth / columns;
     let previewSlotHeight = previewSlotWidth / aspectRatio;
@@ -199,13 +198,12 @@ function drawLiveCollageLayoutPreview() {
     const totalLayoutHeight = previewSlotHeight * rows;
     const offsetX = (canvasWidth - totalLayoutWidth) / 2;
     const offsetY = (canvasHeight - totalLayoutHeight) / 2;
-    const slotMargin = Math.min(previewSlotWidth, previewSlotHeight) * 0.05; // Relative margin
+    const slotMargin = Math.min(previewSlotWidth, previewSlotHeight) * 0.05; 
 
     for (let i = 0; i < totalPhotos; i++) {
         const row = Math.floor(i / columns);
         const col = i % columns;
         
-        // Adjusted slot dimensions and positions to account for margin correctly
         const slotW = previewSlotWidth - (columns > 1 ? slotMargin : 0) ;
         const slotH = previewSlotHeight - (rows > 1 ? slotMargin : 0);
         
@@ -219,13 +217,13 @@ function drawLiveCollageLayoutPreview() {
             };
             img.src = collagePhotos[i];
         } else {
-            liveCollagePreviewCtx.fillStyle = "rgba(200, 200, 200, 0.6)";
+            liveCollagePreviewCtx.fillStyle = "rgba(246, 220, 172, 0.6)"; // Light Beige placeholder (semi-transparent)
             liveCollagePreviewCtx.fillRect(x, y, slotW, slotH);
-            liveCollagePreviewCtx.strokeStyle = "rgba(150, 150, 150, 0.9)";
+            liveCollagePreviewCtx.strokeStyle = "rgba(1, 32, 78, 0.7)"; 
             liveCollagePreviewCtx.lineWidth = 2;
             liveCollagePreviewCtx.strokeRect(x, y, slotW, slotH);
-            liveCollagePreviewCtx.fillStyle = "rgba(0,0,0,0.6)";
-            liveCollagePreviewCtx.font = `bold ${Math.min(slotW, slotH) * 0.2}px Arial`; // Scaled font
+            liveCollagePreviewCtx.fillStyle = "#01204E"; 
+            liveCollagePreviewCtx.font = `bold ${Math.min(slotW, slotH) * 0.2}px Arial`; 
             liveCollagePreviewCtx.textAlign = "center";
             liveCollagePreviewCtx.textBaseline = "middle";
             liveCollagePreviewCtx.fillText((i + 1).toString(), x + slotW / 2, y + slotH / 2);
@@ -265,22 +263,8 @@ function drawCurrentImageInSlideshow() {
     const canvasHeight = liveCollagePreviewCanvas.height;
     liveCollagePreviewCtx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    const imgSrc = slideshowImageSources[currentSlideshowIndex];
-    const img = new Image();
-    img.onload = () => {
-        drawImageCover(liveCollagePreviewCtx, img, 0, 0, canvasWidth, canvasHeight);
-    };
-    img.onerror = () => {
-        console.error("Lỗi tải ảnh cho slideshow:", imgSrc);
-        drawGrid5FallbackBackground(canvasWidth, canvasHeight);
-    };
-    img.src = imgSrc;
-}
-
-function drawGrid5FallbackBackground(canvasWidth, canvasHeight) {
-    if (!liveCollagePreviewCtx) return;
-    liveCollagePreviewCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-
+    // MODIFIED: Draw theme background before drawing slideshow image
+    // This ensures if the image is transparent or fails to load, the theme color shows.
     if (userSelectedCustomBgImage && userSelectedCustomBgImage.complete) {
         try {
             drawImageCover(liveCollagePreviewCtx, userSelectedCustomBgImage, 0, 0, canvasWidth, canvasHeight);
@@ -292,10 +276,48 @@ function drawGrid5FallbackBackground(canvasWidth, canvasHeight) {
         liveCollagePreviewCtx.fillStyle = getThemeColorValue(activeCollageColorTheme);
         liveCollagePreviewCtx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
-    liveCollagePreviewCtx.fillStyle = userSelectedCustomBgImage ? "rgba(255,255,255,0.7)" : "rgba(0,0,50,0.6)";
+
+    const imgSrc = slideshowImageSources[currentSlideshowIndex];
+    const img = new Image();
+    img.onload = () => {
+        // Draw the actual slideshow image on top of the theme background
+        drawImageCover(liveCollagePreviewCtx, img, 0, 0, canvasWidth, canvasHeight);
+    };
+    img.onerror = () => {
+        console.error("Lỗi tải ảnh cho slideshow:", imgSrc);
+        // Fallback already drawn, so no need to call drawGrid5FallbackBackground here again
+        // unless you want to draw the "Chưa có ảnh nào" text again.
+        // For simplicity, if an image in slideshow fails, it shows the theme color.
+    };
+    img.src = imgSrc;
+}
+
+function drawGrid5FallbackBackground(canvasWidth, canvasHeight) {
+    if (!liveCollagePreviewCtx) return;
+    liveCollagePreviewCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+    // MODIFIED: Always draw background first (custom image or active theme color)
+    if (userSelectedCustomBgImage && userSelectedCustomBgImage.complete) {
+        try {
+            drawImageCover(liveCollagePreviewCtx, userSelectedCustomBgImage, 0, 0, canvasWidth, canvasHeight);
+        } catch (e) {
+            liveCollagePreviewCtx.fillStyle = getThemeColorValue(activeCollageColorTheme);
+            liveCollagePreviewCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+        }
+    } else {
+        liveCollagePreviewCtx.fillStyle = getThemeColorValue(activeCollageColorTheme);
+        liveCollagePreviewCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+    }
+
+    // Text color should contrast with the current background
+    const bgColor = userSelectedCustomBgImage ? '#FFFFFF' : getThemeColorValue(activeCollageColorTheme); // Approximation
+    // Simple check for light vs dark background for text color
+    const isDarkBg = bgColor.startsWith('#0') || bgColor === 'navy' || bgColor === '#028391' || bgColor === '#01204E' || bgColor === '#004c55' || bgColor === '#7c2a12' || bgColor === '#4c6a8d';
+    liveCollagePreviewCtx.fillStyle = isDarkBg ? "#F6DCAC" : "#01204E"; // Light Beige on dark, Dark Blue on light
+
     liveCollagePreviewCtx.font = "bold 16px Arial";
     liveCollagePreviewCtx.textAlign = "center";
-    const message = photosInGalleryCount === 0 ? "No Photo to Preview" : "Preview Collage";
+    const message = photosInGalleryCount === 0 ? "No Photo To Preview" : "Collage Preview";
     liveCollagePreviewCtx.fillText(message, canvasWidth / 2, canvasHeight / 2);
 }
 
@@ -370,8 +392,6 @@ function executeSnapshot() {
 
             if (collagePhotos.length === currentCollageMode.totalPhotos) {
                 generateAndDisplayCollage();
-                // inCollageMode = false; // Keep in collage mode until explicitly cancelled or new one starts
-                // toggleCollageCaptureUI(false); // UI remains for collage until new action
             }
         }
     } else {
@@ -388,20 +408,18 @@ function executeSnapshot() {
 async function generateAndDisplayCollage() {
     const { totalPhotos, columns, aspectRatio } = currentCollageMode;
     let outputCanvasWidth, outputCanvasHeight;
-    const textAreaHeight = 100; // Fixed height for text area at the bottom
+    const textAreaHeight = 100; 
 
-    // Determine output canvas dimensions
     if (userSelectedCustomBgImage && userSelectedCustomBgImage.complete) {
         outputCanvasWidth = userSelectedCustomBgImage.naturalWidth;
         outputCanvasHeight = userSelectedCustomBgImage.naturalHeight;
         collageOutputCanvas.width = outputCanvasWidth;
-        collageOutputCanvas.height = outputCanvasHeight;
+        collageOutputCanvas.height = outputCanvasHeight; 
         collageOutputCtx.drawImage(userSelectedCustomBgImage, 0, 0, outputCanvasWidth, outputCanvasHeight);
     } else {
-        // Default dimensions if no custom background
-        outputCanvasWidth = 800; // Default width
+        outputCanvasWidth = 800; 
         const tempRows = Math.ceil(totalPhotos / columns);
-        const tempPhotoSlotWidth = outputCanvasWidth / columns; // Slot width based on default canvas width
+        const tempPhotoSlotWidth = outputCanvasWidth / columns; 
         const tempPhotoSlotHeight = tempPhotoSlotWidth / aspectRatio;
         outputCanvasHeight = tempPhotoSlotHeight * tempRows + textAreaHeight;
 
@@ -411,20 +429,15 @@ async function generateAndDisplayCollage() {
         collageOutputCtx.fillRect(0, 0, outputCanvasWidth, outputCanvasHeight);
     }
 
-    // Calculate dimensions for the area where photos will be placed
-    // This area is above the text area.
     const photoGridAreaWidth = outputCanvasWidth;
     const photoGridAreaHeight = outputCanvasHeight - textAreaHeight;
 
-    // Calculate slot sizes to fit within the photoGridArea
     let photoSlotWidth = photoGridAreaWidth / columns;
     let photoSlotHeight = photoSlotWidth / aspectRatio;
 
     if (photoSlotHeight * Math.ceil(totalPhotos / columns) > photoGridAreaHeight) {
-        // If total height of slots exceeds available area, scale by height
         photoSlotHeight = photoGridAreaHeight / Math.ceil(totalPhotos / columns);
         photoSlotWidth = photoSlotHeight * aspectRatio;
-        // If this makes total width too large, re-scale by width (should not happen if aspectRatio is reasonable)
         if (photoSlotWidth * columns > photoGridAreaWidth) {
             photoSlotWidth = photoGridAreaWidth / columns;
             photoSlotHeight = photoSlotWidth / aspectRatio;
@@ -434,12 +447,11 @@ async function generateAndDisplayCollage() {
     const actualPhotoGridWidth = photoSlotWidth * columns;
     const actualPhotoGridHeight = photoSlotHeight * Math.ceil(totalPhotos / columns);
 
-    // Calculate offsets to center the photo grid within the photoGridArea
     const gridOffsetX = (photoGridAreaWidth - actualPhotoGridWidth) / 2;
     const gridOffsetY = (photoGridAreaHeight - actualPhotoGridHeight) / 2;
     
-    const photoMargin = Math.min(photoSlotWidth, photoSlotHeight) * 0.05; // 5% of smaller dimension as margin
-    const photoBorderWidth = Math.min(photoSlotWidth, photoSlotHeight) * 0.03; // 3% as border
+    const photoMargin = Math.min(photoSlotWidth, photoSlotHeight) * 0.05; 
+    const photoBorderWidth = Math.min(photoSlotWidth, photoSlotHeight) * 0.03; 
 
     const imageLoadPromises = collagePhotos.map(dataUrl => new Promise((resolve, reject) => {
         const img = new Image();
@@ -451,26 +463,22 @@ async function generateAndDisplayCollage() {
     try {
         const loadedImages = await Promise.all(imageLoadPromises);
         for (let i = 0; i < loadedImages.length; i++) {
-            if (i >= totalPhotos) break; // Should not happen if collagePhotos is managed correctly
+            if (i >= totalPhotos) break; 
             const img = loadedImages[i];
             const row = Math.floor(i / columns);
             const col = i % columns;
 
-            // Calculate actual content area for the photo within the slot
             const contentWidth = photoSlotWidth - 2 * photoMargin;
             const contentHeight = photoSlotHeight - 2 * photoMargin;
 
-            // Calculate top-left corner of the slot (including margin)
             const slotX = gridOffsetX + col * photoSlotWidth;
             const slotY = gridOffsetY + row * photoSlotHeight;
             
-            // Position for the photo content (inside margin and border)
             const photoX = slotX + photoMargin + photoBorderWidth;
             const photoY = slotY + photoMargin + photoBorderWidth;
             const photoDisplayWidth = contentWidth - 2 * photoBorderWidth;
             const photoDisplayHeight = contentHeight - 2 * photoBorderWidth;
 
-            // Draw white background for the photo (acts as border)
             collageOutputCtx.fillStyle = '#FFFFFF';
             collageOutputCtx.fillRect(slotX + photoMargin, slotY + photoMargin, contentWidth, contentHeight);
             
@@ -482,22 +490,22 @@ async function generateAndDisplayCollage() {
         console.error("Lỗi tải một hoặc nhiều ảnh cho collage:", error);
     }
 
-    // Draw Text at the bottom, relative to the full outputCanvasHeight
-    const textColor = (userSelectedCustomBgImage || activeCollageColorTheme === 'navy' || activeCollageColorTheme === 'teal') ? '#FFFFFF' : '#2c2c2c'; // Adjust for contrast
-    const textShadowColor = (userSelectedCustomBgImage || activeCollageColorTheme === 'navy' || activeCollageColorTheme === 'teal') ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)';
+    const currentBgIsDark = userSelectedCustomBgImage ? false : (activeCollageColorTheme === 'pink' || activeCollageColorTheme === 'navy' || activeCollageColorTheme === 'green' || activeCollageColorTheme === 'coral' || activeCollageColorTheme === 'gold');
+    const textColor = currentBgIsDark ? '#F6DCAC' : '#01204E';
+    const textShadowColor = currentBgIsDark ? 'rgba(1, 32, 78, 0.7)' : 'rgba(250, 169, 104, 0.5)';
     
     collageOutputCtx.textAlign = 'center';
     collageOutputCtx.shadowColor = textShadowColor;
-    collageOutputCtx.shadowBlur = 4; // Consistent shadow
+    collageOutputCtx.shadowBlur = 4; 
 
-    const dateTextY = outputCanvasHeight - textAreaHeight + 40; // Position within text area
+    const dateTextY = outputCanvasHeight - textAreaHeight + 40; 
     const titleTextY = outputCanvasHeight - textAreaHeight + 80;
 
-    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.03, outputCanvasHeight * 0.03, 28)}px "Dancing Script", cursive`; // Scaled font
+    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.03, outputCanvasHeight * 0.03, 28)}px "Dancing Script", cursive`; 
     collageOutputCtx.fillStyle = textColor;
     collageOutputCtx.fillText(new Date().toLocaleDateString(), outputCanvasWidth / 2, dateTextY);
 
-    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.04, outputCanvasHeight * 0.04, 40)}px "Dancing Script", cursive`; // Scaled font
+    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.04, outputCanvasHeight * 0.04, 40)}px "Dancing Script", cursive`; 
     collageOutputCtx.fillStyle = textColor;
     collageOutputCtx.fillText("Silvia's Palette", outputCanvasWidth / 2, titleTextY);
 
@@ -512,7 +520,6 @@ async function generateAndDisplayCollage() {
         if (downloadBtn) downloadBtn.disabled = false;
         if (clearBtn) clearBtn.disabled = false;
     }
-    // After collage is generated, reset inCollageMode and update Grid 5 to slideshow
     inCollageMode = false;
     toggleCollageCaptureUI(false);
     updateGrid5Preview();
@@ -522,11 +529,18 @@ async function generateAndDisplayCollage() {
 function getThemeColorValue(themeName) {
     if (themeName === 'custom' && themeColorPicker) return themeColorPicker.value;
     const themeColors = {
-        'navy': 'navy', 'pink': '#FFC0CB', 'blue': '#ADD8E6', 'yellow': '#FFFACD',
-        'purple': '#E6E6FA', 'green': '#90EE90', 'teal': 'teal', 'coral': 'coral',
-        'silver': 'silver', 'gold': 'gold'
+        'navy': '#01204E',   
+        'pink': '#028391',   // Teal - Default
+        'blue': '#F6DCAC',   
+        'yellow': '#FAA968', 
+        'purple': '#F85525', 
+        'green': '#004c55',  
+        'teal': '#f7803c',   
+        'coral': '#7c2a12',  
+        'silver': '#ccb089', 
+        'gold': '#4c6a8d'    
     };
-    return themeColors[themeName] || themeColors.navy;
+    return themeColors[themeName] || themeColors.pink; 
 }
 
 function setActiveCollageTheme(themeName, customColorValue = null) {
@@ -540,15 +554,10 @@ function setActiveCollageTheme(themeName, customColorValue = null) {
 
     if (userSelectedCustomBgImage) {
         userSelectedCustomBgImage = null;
-        if (customBgPreviewImage) customBgPreviewImage.src = "data:image/svg+xml,..."; 
+        if (customBgPreviewImage) customBgPreviewImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E"; 
         if (clearCustomBgBtn) clearCustomBgBtn.style.display = 'none';
     }
-    // If not in collage mode, update Grid 5. If in collage mode, the live layout preview will use the new theme.
-    if (!inCollageMode) {
-        updateGrid5Preview();
-    } else {
-        drawLiveCollageLayoutPreview(); // Redraw layout preview with new theme/bg
-    }
+    updateGrid5Preview(); // Always update Grid 5 when theme changes
     console.log(`Chủ đề được đặt thành: ${activeCollageColorTheme}. Màu được áp dụng: ${appliedColor}`);
 }
 
@@ -600,8 +609,8 @@ function addPhotoToGalleryDisplay(imgDataUrl) {
     photoContainer.appendChild(imgEl);
     photoContainer.appendChild(deleteBtnEl);
     if (photoGallery) photoGallery.prepend(photoContainer);
-    photosInGalleryCount = photoGallery.children.length; // Update count after adding
-    if (photosInGalleryCount > 0) { // Enable buttons if gallery has items
+    photosInGalleryCount = photoGallery.children.length; 
+    if (photosInGalleryCount > 0) { 
         if (downloadBtn) downloadBtn.disabled = false;
         if (clearBtn) clearBtn.disabled = false;
     }
@@ -627,14 +636,13 @@ async function downloadAllPhotos() {
             document.body.appendChild(link); 
             link.click();
             document.body.removeChild(link); 
-            URL.revokeObjectURL(link.href); // Clean up blob URL
+            URL.revokeObjectURL(link.href); 
             if (galleryItems.length > 1 && i < galleryItems.length - 1) {
                 await new Promise(resolve => setTimeout(resolve, 300));
             }
         } catch (error) {
             console.error("Lỗi khi tải ảnh:", error);
             alert(`Đã có lỗi khi tải ảnh thứ ${i+1}. Vui lòng thử lại.`);
-            // Optionally break or continue
         }
     }
     if (galleryItems.length > 1) {
@@ -653,6 +661,17 @@ function clearAllPhotos() {
         if (downloadBtn) downloadBtn.disabled = true;
         if (clearBtn) clearBtn.disabled = true;
         updateGrid5Preview(); 
+    }
+}
+
+// --- Status Bar Time ---
+function updateWin95Time() {
+    const timeField = document.getElementById('currentTime');
+    if (timeField) {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        timeField.textContent = `${hours}:${minutes}`;
     }
 }
 
@@ -676,15 +695,13 @@ function setupEventListeners() {
         const btn = document.getElementById(id);
         if (btn) {
             btn.addEventListener('click', () => {
-                // If already in collage mode and a different layout is chosen, restart with new layout
                 if (inCollageMode && (currentCollageMode.totalPhotos !== collageLayoutButtonsConfig[id].photos || currentCollageMode.columns !== collageLayoutButtonsConfig[id].columns)) {
                      if (confirm("Bạn muốn thay đổi layout collage hiện tại? Các ảnh đã chụp cho layout cũ sẽ bị xóa.")) {
-                        cancelCurrentCollage(); // Clear old collage state
+                        cancelCurrentCollage(); 
                      } else {
-                        return; // User chose not to change
+                        return; 
                      }
                 } else if (inCollageMode) {
-                    // Same layout clicked again, maybe do nothing or offer to restart
                     return;
                 }
                 const mode = collageLayoutButtonsConfig[id];
@@ -729,11 +746,7 @@ function setupEventListeners() {
                         activeCollageColorTheme = 'custom_bg';
                         document.querySelectorAll('.theme-option.selected').forEach(opt => opt.classList.remove('selected'));
                         if (customColorPickerButton) customColorPickerButton.style.borderColor = '#ccc';
-                        if (!inCollageMode) { // Only update to slideshow if not actively building a collage
-                           updateGrid5Preview();
-                        } else {
-                           drawLiveCollageLayoutPreview(); // Update layout preview with new BG
-                        }
+                        updateGrid5Preview(); // Update Grid 5 with custom BG or its layout preview
                     };
                     img.onerror = () => alert("Lỗi tải ảnh.");
                     img.src = e.target.result;
@@ -746,9 +759,9 @@ function setupEventListeners() {
     if (clearCustomBgBtn) {
         clearCustomBgBtn.addEventListener('click', () => {
             userSelectedCustomBgImage = null;
-            if (customBgPreviewImage) customBgPreviewImage.src = "data:image/svg+xml,..."; 
+            if (customBgPreviewImage) customBgPreviewImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E"; 
             clearCustomBgBtn.style.display = 'none';
-            setActiveCollageTheme('navy'); 
+            setActiveCollageTheme('pink'); 
         });
     }
 
@@ -775,5 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
     } else {
         alert("Camera không khả dụng hoặc không được trình duyệt hỗ trợ.");
+        const appStatusMessage = document.getElementById('appStatusMessage');
+        if (appStatusMessage) appStatusMessage.textContent = "Không có camera!";
     }
 });
