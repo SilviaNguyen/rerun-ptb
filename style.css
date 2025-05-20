@@ -98,8 +98,11 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
 }
-.win95-button:active, .win95-button.active {
+.win95-button:active, .win95-button.active, .layout-icon-button.selected { /* Added .selected for layout buttons */
     background-color: #FAA968; 
     color: #01204E; 
     border-style: inset;
@@ -110,6 +113,11 @@ body {
     box-shadow: none;
     padding: 7px 11px 5px 13px; 
 }
+.win95-button.layout-icon-button:active svg,
+.win95-button.layout-icon-button.selected svg { /* Style for SVG when button is active/selected */
+    stroke: #01204E; 
+}
+
 .win95-button:disabled {
     color: #74858F; 
     text-shadow: 1px 1px 0 #FDF5E6;
@@ -241,15 +249,31 @@ body {
 
 #grid-item-photo-layout { grid-column: 1 / 4; grid-row: 4 / 5; padding-top: 25px; }
 .collage-layout-section .layout-options {
-    flex-wrap: wrap; 
-    gap: 5px;
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: nowrap; 
+    justify-content: flex-start; 
+    align-items: center; 
+    gap: 8px; 
+    overflow-x: auto; 
+    padding-bottom: 5px; 
 }
-.collage-layout-section .layout-options button {
-    flex-grow: 1; 
-    min-width: 100px; 
-    padding: 5px 8px;
-    font-size: 13px;
+.win95-button.layout-icon-button {
+    flex-grow: 0; 
+    flex-shrink: 0; 
+    min-width: 55px; 
+    max-width: 75px; 
+    height: 50px;    
+    padding: 5px;    
 }
+.win95-button.layout-icon-button svg {
+    width: 90%; 
+    height: 90%;
+    stroke: #F6DCAC; 
+    stroke-linecap: round; 
+    stroke-linejoin: round;
+}
+
 
 #grid-item-theme-color { grid-column: 1 / 2; grid-row: 5 / 6; padding-top: 25px;}
 #grid-item-custom-background { grid-column: 2 / 3; grid-row: 5 / 6; padding-top: 25px;}
@@ -269,11 +293,10 @@ body {
 #video {
     width: 100%; height: 100%; display: block;
     object-fit: cover; border-radius: 0;
-    transform: scaleX(-1); /* Lật camera preview theo chiều ngang */
+    transform: scaleX(-1); 
 }
 #countdown {
     position: absolute; top: 50%; left: 50%;
-    /* Lật ngược lại countdown để chữ không bị ngược, và điều chỉnh vị trí do video đã lật */
     transform: translate(-50%, -50%) scaleX(-1); 
     font-size: 55px; color: #F6DCAC; 
     background-color: rgba(1, 32, 78, 0.8); 
@@ -299,7 +322,7 @@ body {
 }
 .filter-preview-minimal .filter-option img { 
     margin-bottom: 2px; width: 50px; height: 38px;
-    transform: scaleX(-1); /* Lật ảnh preview của filter để khớp với video preview */
+    transform: scaleX(-1); 
 }
 .filter-preview-minimal .filter-option .filter-label { font-size: 11px; }
 .filter-preview-minimal .filter-option.selected {
@@ -317,7 +340,6 @@ body {
     width: 55px; height: 42px; 
     border: 1px solid #028391; 
     margin-bottom: 3px; object-fit: cover;
-    /* Nếu ảnh preview của filter này cũng cần lật thì thêm transform: scaleX(-1); ở đây */
 }
 .filter-label { font-size: 14px; color: #01204E; }
 
@@ -398,60 +420,103 @@ body {
     background-color: #FDF5E6; 
 }
 
-/* Photo Gallery */
 .photo-gallery-container {
     margin: 10px 5px 0 5px;
-    width: calc(100% - 6px); 
+    width: calc(100% - 6px);
     padding-top: 22px;
-    flex-grow: 1; 
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    min-height: 150px; 
+    min-height: 150px;
 }
 .photo-gallery-container::before {
     font-size: 1.05em;
 }
 .photo-gallery {
-    display: flex; flex-wrap: wrap; 
+    display: flex; flex-wrap: wrap;
     gap: 8px; justify-content: center;
     padding: 10px;
-    background-color: #F6DCAC; 
-    border: 2px inset #01204E; 
+    background-color: #F6DCAC;
+    border: 2px inset #01204E;
     border-top-color: #028391;
     border-left-color: #028391;
-    overflow-y: auto; 
-    flex-grow: 1; 
+    overflow-y: auto;
+    flex-grow: 1;
 }
+
+/* MODIFIED: Photo Container and Captured Photo for Hover Effects */
 .photo-container {
-    border: 2px outset #FAA968; 
+    border: 2px outset #FAA968;
     border-right-color: #01204E;
     border-bottom-color: #01204E;
     padding: 3px;
-    background-color: #FDF5E6; 
+    background-color: #FDF5E6;
     box-shadow: 1px 1px 0px #01204E80;
     border-radius: 0;
+    position: relative; /* For positioning delete button */
+    /* overflow: hidden; */ /* Bỏ overflow hidden để nút không bị cắt nếu hơi lệch */
 }
+/* Loại bỏ :hover transform mặc định nếu có */
 .photo-container:hover {
-    transform: none; box-shadow: 1px 1px 0px #01204E80;
+    transform: none; /* Ghi đè nếu có style :hover nào khác */
 }
-.captured-photo { 
+
+.captured-photo {
     display: block;
-    width: 100px; height: 133px;
-    object-fit: cover; cursor: pointer;
-    border: 1px solid #01204E; 
+    width: 100px; /* Kích thước ảnh gốc của bạn */
+    height: 133px; /* Kích thước ảnh gốc của bạn */
+    object-fit: cover;
+    cursor: pointer; /* Giữ lại để mở ảnh trong tab mới */
+    border: 1px solid #01204E;
+    transition: filter 0.25s ease-in-out, transform 0.2s ease-out; /* Thêm transform cho hiệu ứng nhẹ */
 }
-.delete-btn {
-    position: absolute; top: -8px; right: -8px;
-    background-color: #F85525; 
-    color: #F6DCAC; 
-    width: 18px; height: 18px; 
-    border-radius: 0;
-    font-size: 12px; line-height: 18px; 
-    border: 1px outset #FAA968;
-    opacity: 1;
+
+.photo-container:hover .captured-photo {
+    filter: blur(2px) brightness(0.75); /* Áp dụng hiệu ứng mờ và tối nhẹ */
+    /* transform: scale(0.98); */ /* Hiệu ứng thu nhỏ nhẹ ảnh nền */
 }
-.delete-btn:hover { background-color: #D04015; } 
-.photo-container:hover .delete-btn { opacity: 1; }
+
+/* MODIFIED: Delete Button Styling - Giờ đây là một .win95-button */
+.delete-btn { /* Class này được thêm vào <button class="delete-btn win95-button"> */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Căn giữa nút */
+    z-index: 5; /* Đảm bảo nút nằm trên ảnh đã mờ */
+
+    opacity: 0; /* Ẩn nút ban đầu */
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    cursor: pointer;
+
+    /* Ghi đè một số thuộc tính của .win95-button để phù hợp hơn khi nằm trên ảnh nhỏ */
+    min-width: auto;       /* Cho phép nút nhỏ hơn min-width mặc định */
+    width: auto;           /* Để padding và nội dung quyết định chiều rộng */
+    padding: 5px 10px;     /* Padding nhỏ hơn một chút */
+    font-size: 12px;       /* Cỡ chữ nhỏ hơn một chút */
+    height: auto;          /* Để nội dung quyết định chiều cao */
+    line-height: normal;   /* Reset line-height nếu cần */
+
+    /* Các style về border, background, color sẽ được kế thừa từ .win95-button */
+    /* Nếu muốn màu khác cho nút xóa (ví dụ màu đỏ), bạn có thể thêm ở đây: */
+    /* background-color: #F85525; */
+    /* color: #F6DCAC; */
+    /* border-color: #FAA968 #7c2a12 #7c2a12 #FAA968; */ /* ví dụ border cho nút đỏ */
+}
+/* Active state cho nút xóa (nếu cần tùy chỉnh thêm ngoài .win95-button:active) */
+/*
+.delete-btn:active {
+    background-color: #D04015;
+    border-color: #7c2a12 #FAA968 #FAA968 #7c2a12;
+}
+*/
+
+.photo-container:hover .delete-btn {
+    opacity: 1; /* Hiện nút khi hover vào .photo-container */
+    visibility: visible;
+    
+}
+
 
 #mainCanvas { display: none; }
 .flash {
@@ -463,13 +528,13 @@ body {
     transition: opacity 0.05s ease-out;
 }
 
-/* Status Bar - MODIFIED for better fitting and retro look */
+/* Status Bar */
 .win95-status-bar {
     display: flex;
     align-items: stretch; 
     border-top: 1px solid #01204E; 
     border-bottom: 1px solid #FAA968; 
-    padding: 2px 0px; /* MODIFIED: Adjusted vertical padding for the bar itself */
+    padding: 1px 0px; 
     height: 24px; 
     box-sizing: border-box;
     background-color: #FDF5E6; 
@@ -477,17 +542,16 @@ body {
     flex-shrink: 0; 
 }
 .win95-status-bar-field {
-    /* Sunken effect: Darker top/left, Lighter bottom/right */
     border-style: solid;
     border-width: 1px;
-    border-top-color: #01204E;   /* Dark Blue - shadow */
-    border-left-color: #01204E;  /* Dark Blue - shadow */
-    border-bottom-color: #FFFFFF; /* White - highlight, or use #FDF5E6 for less contrast */
-    border-right-color: #FFFFFF; /* White - highlight */
+    border-top-color: #01204E;   
+    border-left-color: #01204E;  
+    border-bottom-color: #FFFFFF; 
+    border-right-color: #FFFFFF; 
     
     padding: 1px 5px; 
     margin: 1px 2px; 
-    line-height: 18px; /* MODIFIED: Ensure text fits vertically */
+    line-height: 18px; 
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -497,7 +561,6 @@ body {
     box-sizing: border-box; 
     display: flex; 
     align-items: center; 
-    /* height: calc(100% - 2px); Removed, parent align-items:stretch should handle height */
 }
 #appStatusMessage {
     flex-grow: 1; 
@@ -529,7 +592,6 @@ body {
 @media (max-width: 768px) { 
     body { padding: 5px; font-size: 14px; } 
     .overall-container.win95-window { min-height: calc(100vh - 10px); }
-    h1 { font-size: 2em; margin-bottom: 10px;} 
     .win95-title-bar { height: 22px; padding: 2px 4px;} 
     .win95-button.title-bar-button { width: 16px; height: 16px; font-size: 10px; line-height: 16px;} 
 
@@ -547,7 +609,6 @@ body {
 
     .win95-button, .grid-button { font-size: 13px; padding: 3px 7px;} 
     .full-height-button { font-size: 13px; } 
-    .collage-layout-section .layout-options button { min-width: 80px; font-size: 12px;} 
     .captured-photo { width: 80px; height: 106px; }
     .win95-status-bar { height: 22px;} 
     .win95-status-bar-field { line-height: 18px; font-size: 12px;} 
@@ -556,7 +617,7 @@ body {
 }
 
 @media (max-width: 480px) { 
-    h1 { font-size: 1.6em; } 
+    /* h1 { font-size: 1.6em; } */ /* Removed unused style */
     .main-grid-container { grid-template-columns: 1fr; } 
     #grid-item-camera-preview,
     #grid-item-take-photo, #grid-item-timer, #grid-item-download-clear,
@@ -575,10 +636,8 @@ body {
     #grid-item-custom-background { grid-row: 8; }
     #grid-item-grayscale-filter { grid-row: 9; }
 
-    .layout-options button { min-width: 70px; font-size: 11px;} 
     .full-height-button { font-size: 13px; } 
     .captured-photo { width: 70px; height: 93px; }
     .win95-group-box::before { font-size: 1em; top: -0.8em;} 
     .filter-label { font-size: 12px; } 
 }
-

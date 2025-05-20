@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silvia's Pallete</title>
+    <title>Silvia's Pallete - Win95 Edition</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -55,11 +55,24 @@
             <div id="grid-item-photo-layout" class="grid-item win95-group-box" data-title="Photo Layout">
                 <div class="collage-layout-section">
                     <div class="layout-options">
-                        <button id="start1x2" class="win95-button">2 Photos (1 Col)</button>
-                        <button id="start1x3" class="win95-button">3 Photos (1 Col)</button>
-                        <button id="start1x4" class="win95-button">4 Photos (1 Col)</button>
-                        <button id="start2x2" class="win95-button">4 Photos (2x2)</button>
-                        <button id="start2x3" class="win95-button">6 Photos (2x3)</button>
+                        <button id="start1x1" class="win95-button layout-icon-button" title="1 Photo">
+                            <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" stroke-width="2" fill="none"/></svg>
+                        </button>
+                        <button id="start1x2" class="win95-button layout-icon-button" title="2 Photos (1 Column)">
+                            <svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="8" stroke-width="1.5" fill="none"/><rect x="7" y="13" width="10" height="8" stroke-width="1.5" fill="none"/></svg>
+                        </button>
+                        <button id="start1x3" class="win95-button layout-icon-button" title="3 Photos (1 Column)">
+                            <svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="6" stroke-width="1.2" fill="none"/><rect x="8" y="9" width="8" height="6" stroke-width="1.2" fill="none"/><rect x="8" y="16" width="8" height="6" stroke-width="1.2" fill="none"/></svg>
+                        </button>
+                        <button id="start1x4" class="win95-button layout-icon-button" title="4 Photos (1 Column)">
+                            <svg viewBox="0 0 24 24"><rect x="8" y="1" width="8" height="4.5" stroke-width="1" fill="none"/><rect x="8" y="6.5" width="8" height="4.5" stroke-width="1" fill="none"/><rect x="8" y="12" width="8" height="4.5" stroke-width="1" fill="none"/><rect x="8" y="17.5" width="8" height="4.5" stroke-width="1" fill="none"/></svg>
+                        </button>
+                        <button id="start2x2" class="win95-button layout-icon-button" title="4 Photos (2x2)">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" stroke-width="1.5" fill="none"/><rect x="13" y="3" width="8" height="8" stroke-width="1.5" fill="none"/><rect x="3" y="13" width="8" height="8" stroke-width="1.5" fill="none"/><rect x="13" y="13" width="8" height="8" stroke-width="1.5" fill="none"/></svg>
+                        </button>
+                        <button id="start2x3" class="win95-button layout-icon-button" title="6 Photos (2x3)">
+                             <svg viewBox="0 0 24 24"><rect x="3" y="2" width="8" height="6" stroke-width="1.2" fill="none"/><rect x="13" y="2" width="8" height="6" stroke-width="1.2" fill="none"/><rect x="3" y="9" width="8" height="6" stroke-width="1.2" fill="none"/><rect x="13" y="9" width="8" height="6" stroke-width="1.2" fill="none"/><rect x="3" y="16" width="8" height="6" stroke-width="1.2" fill="none"/><rect x="13" y="16" width="8" height="6" stroke-width="1.2" fill="none"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -67,16 +80,16 @@
             <div id="grid-item-theme-color" class="grid-item win95-group-box" data-title="Theme Color">
                 <div class="collage-theme-section">
                     <div class="theme-options">
-                        <div class="theme-option theme-navy" data-theme="navy" title="Navy"></div>
-                        <div class="theme-option theme-pink" data-theme="pink" title="Pink"></div>
-                        <div class="theme-option theme-blue" data-theme="blue" title="Light Blue"></div>
-                        <div class="theme-option theme-yellow" data-theme="yellow" title="Yellow"></div>
-                        <div class="theme-option theme-purple" data-theme="purple" title="Purple"></div>
-                        <div class="theme-option theme-green" data-theme="green" title="Green"></div>
-                        <div class="theme-option theme-teal" data-theme="teal" title="Teal"></div>
-                        <div class="theme-option theme-coral" data-theme="coral" title="Coral"></div>
-                        <div class="theme-option theme-silver" data-theme="silver" title="Silver"></div>
-                        <div class="theme-option theme-gold" data-theme="gold" title="Gold"></div>
+                        <div class="theme-option theme-navy" data-theme="navy" title="Dark Blue"></div>
+                        <div class="theme-option theme-pink" data-theme="pink" title="Teal"></div>
+                        <div class="theme-option theme-blue" data-theme="blue" title="Light Beige"></div>
+                        <div class="theme-option theme-yellow" data-theme="yellow" title="Peach"></div>
+                        <div class="theme-option theme-purple" data-theme="purple" title="Orange/Red"></div>
+                        <div class="theme-option theme-green" data-theme="green" title="Darker Teal"></div>
+                        <div class="theme-option theme-teal" data-theme="teal" title="Darker Peach"></div>
+                        <div class="theme-option theme-coral" data-theme="coral" title="Darker Orange/Red"></div>
+                        <div class="theme-option theme-silver" data-theme="silver" title="Muted Beige"></div>
+                        <div class="theme-option theme-gold" data-theme="gold" title="Muted Blue"></div>
                         
                         <div id="customColorPickerButton" class="custom-color-picker-button win95-button" title="Custom Color">
                             🎨

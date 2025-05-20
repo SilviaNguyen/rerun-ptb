@@ -620,7 +620,7 @@ async function generateAndDisplayCollage() {
     const year = today.getFullYear();
     const formattedDate = `${day}/${month}/${year}`; 
 
-    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.03, textAreaHeight * 0.3, (totalPhotos === 1 ? 28 : 32))}px 'Courier New', Courier, monospace`;
+    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.03, textAreaHeight * 0.3, (totalPhotos === 1 ? 28 : 32))}px 'Pixelify Sans', 'Dancing Script', cursive`;
     collageOutputCtx.fillStyle = textColor;
     collageOutputCtx.fillText(formattedDate, outputCanvasWidth / 2, dateTextY);
 
