@@ -624,7 +624,7 @@ async function generateAndDisplayCollage() {
     collageOutputCtx.fillStyle = textColor;
     collageOutputCtx.fillText(formattedDate, outputCanvasWidth / 2, dateTextY);
 
-    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.04, textAreaHeight * 0.4, (totalPhotos === 1 ? 38 : 44))}px 'Pixelify Sans', 'Dancing Script', cursive`;
+    collageOutputCtx.font = `bold ${Math.min(outputCanvasWidth * 0.04, textAreaHeight * 0.4, (totalPhotos === 1 ? 38 : 44))}px 'Dancing Script', cursive`;
     collageOutputCtx.fillStyle = textColor;
     collageOutputCtx.fillText("Silvia's Palette", outputCanvasWidth / 2, titleTextY);
 
