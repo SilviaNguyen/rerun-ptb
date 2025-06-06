@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silvia's Pallete - Win95 Edition</title>
+    <title>Silvia's Pallete</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -27,13 +27,7 @@
                     <video id="video" autoplay playsinline></video>
                     <div id="countdown"></div>
                 </div>
-                <div class="filter-preview-minimal">
-                    <div class="filter-option selected win95-button" data-filter="none">
-                        <img id="preview-none" alt="Normal">
-                        <div class="filter-label">Normal</div>
-                    </div>
                 </div>
-            </div>
 
             <div id="grid-item-take-photo" class="grid-item no-padding">
                 <button id="captureBtn" class="grid-button win95-button full-height-button">Take Photo</button>
@@ -113,10 +107,20 @@
                 </div>
             </div>
 
-            <div id="grid-item-grayscale-filter" class="grid-item win95-group-box" data-title="Filter">
-                 <div class="filter-option win95-button" data-filter="grayscale" id="grayscaleFilterStandalone">
-                    <img id="preview-grayscale" alt="Grayscale">
-                    <div class="filter-label">Grayscale</div>
+            <div id="grid-item-filters" class="grid-item win95-group-box" data-title="Filters">
+                 <div class="filter-options-container">
+                    <div class="filter-option win95-button" data-filter="none" id="normalFilterStandalone">
+                        <img id="preview-none-main" alt="Normal">
+                        <div class="filter-label">Normal</div>
+                    </div>
+                    <div class="filter-option win95-button" data-filter="grayscale" id="grayscaleFilterStandalone">
+                        <img id="preview-grayscale-main" alt="Grayscale">
+                        <div class="filter-label">Grayscale</div>
+                    </div>
+                    <div class="filter-option win95-button" data-filter="beauty" id="beautyFilterStandalone">
+                        <img id="preview-beauty-main" alt="Beauty">
+                        <div class="filter-label">Beauty</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -134,7 +138,7 @@
             <div class="win95-status-bar-field" id="currentTime"></div>
         </div>
     </div>
-    
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="index4.js"></script>
 </body>
 </html>

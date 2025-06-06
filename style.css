@@ -102,7 +102,7 @@ body {
     align-items: center; 
     justify-content: center; 
 }
-.win95-button:active, .win95-button.active, .layout-icon-button.selected { /* Added .selected for layout buttons */
+.win95-button:active, .win95-button.active, .layout-icon-button.selected, .filter-option.selected { /* Added .selected for layout and filter buttons */
     background-color: #FAA968; 
     color: #01204E; 
     border-style: inset;
@@ -180,7 +180,7 @@ body {
 /* Specific Grid Item Styling & Placement */
 #grid-item-camera-preview {
     grid-column: 1 / 3;
-    grid-row: 1 / 4;
+    grid-row: 1 / 4; /* Adjusted row span as minimal filters are removed */
     background-color: #000;
     border: 2px inset #01204E; 
     border-top-color: #028391; 
@@ -222,7 +222,7 @@ body {
 
 #grid-item-collage-preview {
     grid-column: 4 / 6;
-    grid-row: 1 / 5;
+    grid-row: 1 / 5; /* Adjusted from 1/5 */
     display: flex;
     flex-direction: column;
     justify-content: flex-start; 
@@ -230,7 +230,7 @@ body {
     padding-top: 25px;
 }
 #grid-item-collage-preview::before {
-    content: "Collage Preview";
+    content: "Collage Preview"; /* This is overridden by data-title, can be removed if data-title is always used */
 }
 
 #liveCollagePreviewCanvas {
@@ -247,7 +247,7 @@ body {
     margin-top: 5px;
 }
 
-#grid-item-photo-layout { grid-column: 1 / 4; grid-row: 4 / 5; padding-top: 25px; }
+#grid-item-photo-layout { grid-column: 1 / 4; grid-row: 4 / 5; padding-top: 25px; } /* Adjusted from 4/5 */
 .collage-layout-section .layout-options {
     display: flex; 
     flex-direction: row; 
@@ -275,24 +275,27 @@ body {
 }
 
 
-#grid-item-theme-color { grid-column: 1 / 2; grid-row: 5 / 6; padding-top: 25px;}
-#grid-item-custom-background { grid-column: 2 / 3; grid-row: 5 / 6; padding-top: 25px;}
-#grid-item-grayscale-filter { grid-column: 3 / 4; grid-row: 5 / 6; padding-top: 25px;}
-
-#grayscaleFilterStandalone {
-    margin: auto;
-    padding: 5px;
+#grid-item-theme-color { grid-column: 1 / 2; grid-row: 5 / 6; padding-top: 25px;} /* Adjusted from 5/6 */
+#grid-item-custom-background { grid-column: 2 / 3; grid-row: 5 / 6; padding-top: 25px;} /* Adjusted from 5/6 */
+#grid-item-filters { /* Previously #grid-item-grayscale-filter, now more generic */
+    grid-column: 3 / 4; /* Example placement, adjust as needed if layout changes significantly */
+    grid-row: 5 / 6;    /* Example placement */
+    padding-top: 25px;
+    align-items: flex-start; /* Align content to top for filters */
 }
+
 
 /* Video and Camera Preview */
 .video-container {
     position: relative; width: 100%; 
     overflow: hidden; background-color: #000;
     flex-grow: 1; display: flex; border-radius: 0;
+    min-height: 150px; /* Ensure it has some minimum height */
 }
 #video {
     width: 100%; height: 100%; display: block;
-    object-fit: cover; border-radius: 0;
+    object-fit: contain; /* MODIFIED from cover to contain */
+    border-radius: 0;
     transform: scaleX(-1); 
 }
 #countdown {
@@ -306,42 +309,40 @@ body {
     border: 2px outset #FAA968;
 }
 
-/* Filter Preview under camera */
-.filter-preview-minimal {
-    display: flex; justify-content: center;
-    padding-top: 5px; background-color: #000;
-    flex-shrink: 0; 
-}
-.filter-preview-minimal .filter-option {
-    background-color: #028391; 
-    border: 2px outset #FAA968;
-    border-right-color: #01204E;
-    border-bottom-color: #01204E;
-    color: #F6DCAC;
-    padding: 3px 5px; min-width: auto;
-}
-.filter-preview-minimal .filter-option img { 
-    margin-bottom: 2px; width: 50px; height: 38px;
-    transform: scaleX(-1); 
-}
-.filter-preview-minimal .filter-option .filter-label { font-size: 11px; }
-.filter-preview-minimal .filter-option.selected {
-    border-style: inset;
-    background-color: #FAA968;
-    color: #01204E;
+/* Filter Preview under camera - REMOVED */
+/* .filter-preview-minimal { ... } */
+
+/* Filter Options Container (for main filters grid) */
+#grid-item-filters .filter-options-container {
+    display: flex;
+    justify-content: space-around; /* Evenly space buttons */
+    align-items: flex-start; /* Align to top */
+    flex-wrap: wrap; /* Allow wrapping */
+    gap: 8px; /* Space between buttons if they wrap */
+    width: 100%;
+    padding-top: 5px; /* Space from group box title */
 }
 
-/* Filter Options (for standalone grayscale) */
-.filter-option {
-    cursor: pointer; text-align: center;
-    padding: 5px; color: #01204E;
+/* Filter Options (for main filters grid) */
+#grid-item-filters .filter-option { /* General style for filter buttons in the main grid */
+    /* .win95-button provides base style. This class is for content within it. */
+    flex-direction: column; /* Stack image and label vertically */
+    padding: 5px; /* Internal padding for content */
+    min-width: 80px; /* Ensure a decent minimum width */
+    height: auto; /* Adjust height based on content */
 }
-.filter-option img {
+#grid-item-filters .filter-option img {
     width: 55px; height: 42px; 
     border: 1px solid #028391; 
     margin-bottom: 3px; object-fit: cover;
+    /* No scaleX(-1) here, previews should be normal */
 }
-.filter-label { font-size: 14px; color: #01204E; }
+#grid-item-filters .filter-option .filter-label {
+    font-size: 13px;
+    color: inherit; /* Inherit color from .win95-button states */
+}
+/* Removed #grayscaleFilterStandalone specific margin as flex handles it */
+
 
 /* Theme Options */
 .collage-theme-section { width: 100%; }
@@ -399,6 +400,7 @@ body {
     border-top-color: #028391;
     border-left-color: #028391;
     background-color: #F6DCAC; 
+    cursor: pointer;
 }
 #customBgPreviewContainer img { width: 100%; height: 100%; object-fit: cover; }
 #triggerCustomBgInput, #clearCustomBg { padding: 3px 6px; font-size: 13px;}
@@ -422,7 +424,7 @@ body {
 
 .photo-gallery-container {
     margin: 10px 5px 0 5px;
-    width: calc(100% - 6px);
+    /* width: calc(100% - 6px); */ /* Check if this is needed or if parent handles width */
     padding-top: 22px;
     flex-grow: 1;
     display: flex;
@@ -444,7 +446,6 @@ body {
     flex-grow: 1;
 }
 
-/* MODIFIED: Photo Container and Captured Photo for Hover Effects */
 .photo-container {
     border: 2px outset #FAA968;
     border-right-color: #01204E;
@@ -453,68 +454,86 @@ body {
     background-color: #FDF5E6;
     box-shadow: 1px 1px 0px #01204E80;
     border-radius: 0;
-    position: relative; /* For positioning delete button */
-    /* overflow: hidden; */ /* Bỏ overflow hidden để nút không bị cắt nếu hơi lệch */
+    position: relative; 
+    overflow: hidden;
 }
-/* Loại bỏ :hover transform mặc định nếu có */
 .photo-container:hover {
-    transform: none; /* Ghi đè nếu có style :hover nào khác */
+    transform: none; 
 }
 
 .captured-photo {
     display: block;
-    width: 100px; /* Kích thước ảnh gốc của bạn */
-    height: 133px; /* Kích thước ảnh gốc của bạn */
-    object-fit: cover;
-    cursor: pointer; /* Giữ lại để mở ảnh trong tab mới */
+    width: 100px; 
+    height: 133px; 
+    object-fit: contain;
+    /* cursor: pointer; */ 
     border: 1px solid #01204E;
-    transition: filter 0.25s ease-in-out, transform 0.2s ease-out; /* Thêm transform cho hiệu ứng nhẹ */
+    transition: filter 0.25s ease-in-out, transform 0.2s ease-out; 
 }
 
 .photo-container:hover .captured-photo {
-    filter: blur(2px) brightness(0.75); /* Áp dụng hiệu ứng mờ và tối nhẹ */
-    /* transform: scale(0.98); */ /* Hiệu ứng thu nhỏ nhẹ ảnh nền */
+    filter: blur(1.5px) brightness(0.75); 
 }
 
-/* MODIFIED: Delete Button Styling - Giờ đây là một .win95-button */
-.delete-btn { /* Class này được thêm vào <button class="delete-btn win95-button"> */
+.photo-actions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(253, 245, 230, 0.6); /* Semi-transparent light overlay */
+    display: flex;
+    flex-direction: column; /* Stack View and Delete buttons vertically */
+    align-items: center;
+    justify-content: center;
+    gap: 6px; /* Space between buttons */
+    opacity: 0; /* Hidden by default */
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    padding: 5px; /* Optional padding within the actions area */
+    box-sizing: border-box;
+    border-radius: 0; /* Ensure it matches the image container if it has one */
+}
+
+.photo-container:hover .photo-actions {
+    opacity: 1;
+    visibility: visible;
+}
+
+.photo-actions .win95-button { /* Styling for both View and Delete buttons in actions */
+    min-width: 70px; /* Adjust as needed */
+    width: auto; /* Allow content to define width up to a point */
+    padding: 4px 8px;
+    font-size: 12px;
+    height: auto;
+    line-height: normal;
+    margin: 0 !important; /* Override other win95-button margins if they interfere */
+    /* Other .win95-button styles (border, color, active state) will apply */
+}
+/*
+.delete-btn { 
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Căn giữa nút */
-    z-index: 5; /* Đảm bảo nút nằm trên ảnh đã mờ */
-
-    opacity: 0; /* Ẩn nút ban đầu */
+    transform: translate(-50%, -50%); 
+    z-index: 5; 
+    opacity: 0; 
     visibility: hidden;
     transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
     cursor: pointer;
-
-    /* Ghi đè một số thuộc tính của .win95-button để phù hợp hơn khi nằm trên ảnh nhỏ */
-    min-width: auto;       /* Cho phép nút nhỏ hơn min-width mặc định */
-    width: auto;           /* Để padding và nội dung quyết định chiều rộng */
-    padding: 5px 10px;     /* Padding nhỏ hơn một chút */
-    font-size: 12px;       /* Cỡ chữ nhỏ hơn một chút */
-    height: auto;          /* Để nội dung quyết định chiều cao */
-    line-height: normal;   /* Reset line-height nếu cần */
-
-    /* Các style về border, background, color sẽ được kế thừa từ .win95-button */
-    /* Nếu muốn màu khác cho nút xóa (ví dụ màu đỏ), bạn có thể thêm ở đây: */
-    /* background-color: #F85525; */
-    /* color: #F6DCAC; */
-    /* border-color: #FAA968 #7c2a12 #7c2a12 #FAA968; */ /* ví dụ border cho nút đỏ */
-}
-/* Active state cho nút xóa (nếu cần tùy chỉnh thêm ngoài .win95-button:active) */
-/*
-.delete-btn:active {
-    background-color: #D04015;
-    border-color: #7c2a12 #FAA968 #FAA968 #7c2a12;
-}
+    min-width: auto;       
+    width: auto;          
+    padding: 5px 10px;     
+    font-size: 12px;      
+    height: auto;         
+    line-height: normal;  
+    /* Inherits .win95-button styles for borders, bg, color 
+} 
 */
 
 .photo-container:hover .delete-btn {
-    opacity: 1; /* Hiện nút khi hover vào .photo-container */
+    opacity: 1; 
     visibility: visible;
-    
 }
 
 
@@ -561,8 +580,8 @@ body {
     box-sizing: border-box; 
     display: flex; 
     align-items: center;
-    
 }
+
 #appStatusMessage {
     flex-grow: 1; 
 }
@@ -574,7 +593,6 @@ body {
     flex-shrink: 0; 
 }
 
-
 /* ====== Responsive Adjustments ====== */
 @media (max-width: 1200px) { 
     .main-grid-container { grid-template-columns: repeat(4, 1fr); } 
@@ -585,9 +603,10 @@ body {
     #grid-item-download-clear .grid-button { margin: 0; width: calc(50% - 1.5px); height: 100%;} 
     #grid-item-collage-preview { grid-column: 1 / 5; grid-row: 3 / 4; } 
     #grid-item-photo-layout { grid-column: 1 / 3; grid-row: 4 / 5; }
-    #grid-item-theme-color { grid-column: 3 / 4; grid-row: 4 / 5; }
+    #grid-item-theme-color { grid-column: 3 / 4; grid-row: 4 / 5; } /* Adjusted from 3/4 */
     #grid-item-custom-background { grid-column: 1 / 3; grid-row: 5 / 6; }
-    #grid-item-grayscale-filter { grid-column: 3 / 4; grid-row: 5 / 6; }
+    #grid-item-filters { grid-column: 4 / 5; grid-row: 4 / 5; } /* Adjusted from 3/4, row 5/6 */
+
 }
 
 @media (max-width: 768px) { 
@@ -606,7 +625,7 @@ body {
     #grid-item-photo-layout { grid-column: 1 / 3; grid-row: 5 / 6; }
     #grid-item-theme-color { grid-column: 1 / 3; grid-row: 6 / 7; }
     #grid-item-custom-background { grid-column: 1 / 3; grid-row: 7 / 8; }
-    #grid-item-grayscale-filter { grid-column: 1 / 3; grid-row: 8 / 9; }
+    #grid-item-filters { grid-column: 1 / 3; grid-row: 8 / 9; } /* Adjusted from 1/3 */
 
     .win95-button, .grid-button { font-size: 13px; padding: 3px 7px;} 
     .full-height-button { font-size: 13px; } 
@@ -618,12 +637,11 @@ body {
 }
 
 @media (max-width: 480px) { 
-    /* h1 { font-size: 1.6em; } */ /* Removed unused style */
     .main-grid-container { grid-template-columns: 1fr; } 
     #grid-item-camera-preview,
     #grid-item-take-photo, #grid-item-timer, #grid-item-download-clear,
     #grid-item-collage-preview, #grid-item-photo-layout, #grid-item-theme-color,
-    #grid-item-custom-background, #grid-item-grayscale-filter {
+    #grid-item-custom-background, #grid-item-filters { /* Added #grid-item-filters */
         grid-column: 1 / 2;
     }
     #grid-item-camera-preview { grid-row: 1; min-height: 180px; }
@@ -635,19 +653,10 @@ body {
     #grid-item-photo-layout { grid-row: 6; }
     #grid-item-theme-color { grid-row: 7; }
     #grid-item-custom-background { grid-row: 8; }
-    #grid-item-grayscale-filter { grid-row: 9; }
+    #grid-item-filters { grid-row: 9; } /* Ensured it has its own row */
 
     .full-height-button { font-size: 13px; } 
     .captured-photo { width: 70px; height: 93px; }
     .win95-group-box::before { font-size: 1em; top: -0.8em;} 
-    .filter-label { font-size: 12px; } 
-}
-
-@font-face {
-  font-family: 'SilviaPaletteFont'; /* This is the name you choose to "call" it in your CSS */
-  src: url('path/to/your/fontfile.woff2') format('woff2'), /* Recommended modern format */
-       url('path/to/your/fontfile.woff') format('woff');   /* Older format for wider compatibility */
-  /* You can also specify font-weight and font-style if applicable */
-  font-weight: normal;
-  font-style: normal;
+    #grid-item-filters .filter-option .filter-label { font-size: 12px; } /* Adjusted for smaller screens */
 }

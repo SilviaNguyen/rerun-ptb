@@ -1,5 +1,4 @@
-// index4.js - Silvia's Palette (với setTransform để đảm bảo text không lật)
-
+// index4.js - Silvia's Palette (với setTransform để đảm bảo text không lật & Beauty Filter)
 // DOM Elements
 const video = document.getElementById('video');
 const mainCanvas = document.getElementById('mainCanvas'); // Hidden canvas for processing
@@ -9,13 +8,17 @@ const downloadBtn = document.getElementById('downloadBtn');
 const clearBtn = document.getElementById('clearBtn');
 const photoGallery = document.getElementById('photoGallery'); // Main gallery display
 const flash = document.getElementById('flash');
+
 // Filter related
-const normalFilterPreviewImg = document.getElementById('preview-none');
-const grayscaleFilterStandalone = document.getElementById('grayscaleFilterStandalone');
-const previewGrayscaleImg = document.getElementById('preview-grayscale');
+const previewNoneMainImg = document.getElementById('preview-none-main'); 
+const previewGrayscaleMainImg = document.getElementById('preview-grayscale-main'); 
+const previewBeautyMainImg = document.getElementById('preview-beauty-main'); 
 
 const countdown = document.getElementById('countdown');
-const collageStatus = document.getElementById('collageStatus'); // Status text within Grid 5
+const collageStatus = document.getElementById('collageStatus'); 
+
+let faceApiLoaded = false;
+let faceLandmarkModelLoaded = false
 
 // Grid 5 - Preview Area
 const liveCollagePreviewCanvas = document.getElementById('liveCollagePreviewCanvas');
@@ -36,15 +39,14 @@ const themeColorPicker = document.getElementById('themeColorPicker');
 const customColorPickerButton = document.getElementById('customColorPickerButton');
 
 // Collage Output Canvas (created in memory)
-const collageOutputCanvas = document.createElement('canvas'); // Used for final collage generation
+const collageOutputCanvas = document.createElement('canvas'); 
 const collageOutputCtx = collageOutputCanvas.getContext('2d');
 
 // Global Variables
 let stream = null;
-let currentFilter = 'none';
+let currentFilter = 'none'; 
 let photosInGalleryCount = 0;
 let collagePhotos = [];
-// Default collage mode to 1x1
 let currentCollageMode = { totalPhotos: 1, columns: 1, aspectRatio: 3/4 };
 let inCollageMode = false;
 let activeCollageColorTheme = 'pink';
@@ -71,10 +73,34 @@ async function init() {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = stream;
 
+        const appStatusMessage = document.getElementById('appStatusMessage');
+        if (appStatusMessage) appStatusMessage.textContent = "Đang tải model AI...";
+        try {
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri('./models'),
+                faceapi.nets.faceLandmark68TinyNet.loadFromUri('./models')
+            ]);
+            console.log("FaceAPI models loaded successfully.");
+            if (appStatusMessage) appStatusMessage.textContent = "Ready";
+            faceApiLoaded = true;
+            faceLandmarkModelLoaded = true;
+        } catch (err) {
+            console.error('Lỗi tải FaceAPI models:', err);
+            if(appStatusMessage){
+                if(err.message.includes('faceLandmark68TinyNet')){
+                    appStatusMessage.textContent = 'Error Loading Model AI (Landmark)'
+                } else {
+                    appStatusMessage.textContent = 'Error Loading Model AI (Dectector)'
+                }
+            }
+            if(!faceapi.nets.tinyFaceDetector.params) faceApiLoaded = false
+            if(!faceapi.nets.faceLandmark68TinyNet.params) faceLandmarkModelLoaded = false
+        }
+
+
         video.onloadedmetadata = () => {
             mainCanvas.width = video.videoWidth;
             mainCanvas.height = video.videoHeight;
-            // console.log('Actual video resolution from webcam:', video.videoWidth, 'x', video.videoHeight);
 
             if (liveCollagePreviewCanvas) {
                 if (liveCollagePreviewCanvas.offsetWidth > 0 && liveCollagePreviewCanvas.offsetHeight > 0) {
@@ -85,7 +111,7 @@ async function init() {
                     liveCollagePreviewCanvas.height = 225;
                 }
             }
-            updateFilterPreviews();
+            updateFilterPreviews(); 
         };
 
         const defaultThemeOption = document.querySelector(`.theme-option[data-theme="${activeCollageColorTheme}"]`);
@@ -98,9 +124,8 @@ async function init() {
             themeColorPicker.value = initialColor;
             if (customColorPickerButton) customColorPickerButton.style.borderColor = initialColor;
         }
-        document.querySelectorAll('.filter-option').forEach(opt => opt.classList.remove('selected'));
-        const normalFilterOption = document.querySelector('.filter-option[data-filter="none"]');
-        if (normalFilterOption) normalFilterOption.classList.add('selected');
+        
+        applyFilterToVideo('none'); 
 
         updateWin95Time();
         setInterval(updateWin95Time, 30000);
@@ -120,42 +145,84 @@ async function init() {
     }
 }
 
+function getBoundingBoxWithPadding(points, padding = 0, canvasWidth = Infinity, canvasHeight = Infinity) {
+    if (!points || points.length === 0) return new faceapi.Rect(0, 0, 0, 0);
+    
+    const xCoords = points.map(p => p.x);
+    const yCoords = points.map(p => p.y);
+
+    let minX = Math.min(...xCoords);
+    let minY = Math.min(...yCoords);
+    let maxX = Math.max(...xCoords);
+    let maxY = Math.max(...yCoords);
+
+    minX -= padding;
+    minY -= padding;
+    maxX += padding;
+    maxY += padding;
+
+    minX = Math.max(0, minX);
+    minY = Math.max(0, minY);
+    maxX = Math.min(canvasWidth, maxX);
+    maxY = Math.min(canvasHeight, maxY);
+
+    const width = Math.max(0, maxX - minX);
+    const height = Math.max(0, maxY - minY);
+
+    return new faceapi.Rect(minX, minY, width, height);
+}
+
 // --- Filter Logic ---
-function updateFilterPreviews() {
+function updateFilterPreviews() { 
     if (!video || video.paused || video.ended || video.videoWidth === 0) {
         return;
     }
-    if (normalFilterPreviewImg) drawPreview(video, normalFilterPreviewImg, 'none');
-    if (previewGrayscaleImg) drawPreview(video, previewGrayscaleImg, 'grayscale(100%)');
+    if (previewNoneMainImg) drawPreview(video, previewNoneMainImg, getFilterCSSText('none', true));
+    if (previewGrayscaleMainImg) drawPreview(video, previewGrayscaleMainImg, getFilterCSSText('grayscale', true));
+    if (previewBeautyMainImg) drawPreview(video, previewBeautyMainImg, getFilterCSSText('beauty', true));
 }
 
 function drawPreview(sourceVideo, imgElement, filterCSSText) {
     const cvs = document.createElement('canvas');
     const ctx = cvs.getContext('2d');
-    cvs.width = imgElement.offsetWidth > 0 ? imgElement.offsetWidth : 60;
-    cvs.height = imgElement.offsetHeight > 0 ? imgElement.offsetHeight : 45;
+    cvs.width = imgElement.offsetWidth > 0 ? imgElement.offsetWidth : 55; 
+    cvs.height = imgElement.offsetHeight > 0 ? imgElement.offsetHeight : 42; 
     try {
+        ctx.filter = filterCSSText === 'none' ? 'none' : filterCSSText;
+        
         ctx.translate(cvs.width, 0);
         ctx.scale(-1, 1);
-        ctx.filter = filterCSSText === 'none' ? 'none' : filterCSSText;
         ctx.drawImage(sourceVideo, 0, 0, sourceVideo.videoWidth, sourceVideo.videoHeight, 0, 0, cvs.width, cvs.height);
-        ctx.filter = 'none';
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.setTransform(1, 0, 0, 1, 0, 0); 
+        ctx.filter = 'none'; 
+        
         imgElement.src = cvs.toDataURL('image/jpeg', 0.8);
     } catch (e) { console.error("Lỗi vẽ preview filter:", filterCSSText, e); }
 }
 
-function getFilterCSSText(filterName) {
-    return filterName === 'grayscale' ? 'grayscale(100%)' : 'none';
+
+function getFilterCSSText(filterName, isForPreview = false) {
+    if (filterName === 'grayscale') {
+        return 'grayscale(100%)';
+    } else if (filterName === 'beauty') {
+        if (isForPreview) {
+            return 'blur(0.05px) contrast(1.05) saturate(1.15)';
+        } else {
+            return 'contrast(1.05) saturate(1.15)'; 
+        }
+    }
+    return 'none';
 }
 
-function applyFilterToVideo(filterName) {
-    currentFilter = filterName;
-    if (video) video.style.filter = getFilterCSSText(filterName);
-    const normalOpt = document.querySelector('.filter-option[data-filter="none"]');
-    if (normalOpt) normalOpt.classList.toggle('selected', filterName === 'none');
-    if (grayscaleFilterStandalone) grayscaleFilterStandalone.classList.toggle('selected', filterName === 'grayscale');
+function applyFilterToVideo(filterName) { 
+    currentFilter = filterName; 
+    video.style.filter = getFilterCSSText(filterName, true); 
+
+    document.querySelectorAll('.filter-option[data-filter]').forEach(opt => { 
+        opt.classList.toggle('selected', opt.dataset.filter === filterName); 
+    });
 }
+
 
 // --- Grid 5 Preview Logic (Combined Slideshow and Live Collage Layout) ---
 function updateGrid5Preview() {
@@ -226,14 +293,8 @@ function drawLiveCollageLayoutPreview() {
         if (collagePhotos[i]) {
             const img = new Image();
             img.onload = () => {
-                const tempCvs = document.createElement('canvas');
-                const tempCtx = tempCvs.getContext('2d');
-                tempCvs.width = img.naturalWidth;
-                tempCvs.height = img.naturalHeight;
-                tempCtx.translate(tempCvs.width, 0); 
-                tempCtx.scale(-1, 1);               
-                tempCtx.drawImage(img, 0, 0);       
-                drawImageCover(liveCollagePreviewCtx, tempCvs, x, y, slotW, slotH);
+                // collagePhotos[i] is already un-flipped. Draw it directly.
+                drawImageCover(liveCollagePreviewCtx, img, x, y, slotW, slotH);
             };
             img.src = collagePhotos[i]; 
         } else {
@@ -433,7 +494,6 @@ function toggleCollageCaptureUI(isCapturingMode) {
 // --- Photo Capture ---
 function capturePhotoWithFlash(useTimer = false) {
     if (!inCollageMode || !currentCollageMode.totalPhotos || collagePhotos.length >= currentCollageMode.totalPhotos) {
-        // console.log("Cannot capture: Not in active collage mode or collage is full.");
         toggleCollageCaptureUI(inCollageMode);
         return;
     }
@@ -478,27 +538,150 @@ function drawImageContain(ctx, img, x, y, w, h, padding = 0) {
 }
 
 
-function executeSnapshot() {
+async function executeSnapshot() {
     if (!stream || !video || video.readyState < video.HAVE_ENOUGH_DATA) {
         console.error("Video stream not ready for snapshot.");
         return;
     }
     if (flash) { flash.style.opacity = '0.9'; setTimeout(() => { flash.style.opacity = '0'; }, 120); }
 
-    mainCtx.filter = getFilterCSSText(currentFilter);
-    mainCtx.drawImage(video, 0, 0, mainCanvas.width, mainCanvas.height);
-    mainCtx.filter = 'none';
-    
-    const rawPhotoDataUrl = mainCanvas.toDataURL('image/jpeg', 0.95); 
+    const originalVideoStyleFilter = video.style.filter;
+    video.style.filter = 'none'; 
 
+    mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+    mainCtx.save();
+    mainCtx.translate(mainCanvas.width, 0);
+    mainCtx.scale(-1, 1);
+    mainCtx.drawImage(video, 0, 0, mainCanvas.width, mainCanvas.height);
+    mainCtx.restore(); 
+    
+    if (currentFilter === 'beauty') {
+        const globalBeautyEffects = getFilterCSSText('beauty', false); 
+        if (globalBeautyEffects && globalBeautyEffects !== 'none') {
+            const tempCopyCanvas = document.createElement('canvas');
+            tempCopyCanvas.width = mainCanvas.width;
+            tempCopyCanvas.height = mainCanvas.height;
+            const tempCopyCtx = tempCopyCanvas.getContext('2d');
+            tempCopyCtx.drawImage(mainCanvas, 0, 0); 
+            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            mainCtx.filter = globalBeautyEffects;
+            mainCtx.drawImage(tempCopyCanvas, 0, 0); 
+            mainCtx.filter = 'none';
+        }
+
+        if (faceApiLoaded && faceLandmarkModelLoaded && faceapi.nets.tinyFaceDetector.params && faceapi.nets.faceLandmark68TinyNet.params) {
+            try {
+                const detections = await faceapi.detectAllFaces(mainCanvas, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true);
+
+                if (detections && detections.length > 0) {
+                    const skinSmoothBlurAmount = 'blur(2px)'; 
+                    for (const detection of detections) {
+                        const overallFaceBox = detection.detection.box; 
+                        const landmarks = detection.landmarks;
+
+                        const leftEyePoints = landmarks.getLeftEye();
+                        const rightEyePoints = landmarks.getRightEye();
+                        const mouthPoints = landmarks.getMouth(); 
+                        const nosePoints = landmarks.getNose();
+
+                        const featurePadding = overallFaceBox.width * 0.02; 
+                        const featureBoxesData = [];
+
+                        if (leftEyePoints.length) featureBoxesData.push({ type: 'leftEye', points: leftEyePoints });
+                        if (rightEyePoints.length) featureBoxesData.push({ type: 'rightEye', points: rightEyePoints });
+                        if (mouthPoints.length) featureBoxesData.push({ type: 'mouth', points: mouthPoints });
+                        if (nosePoints.length) featureBoxesData.push({ type: 'nose', points: nosePoints });
+
+                        const originalFeatureCanvases = featureBoxesData.map(data => {
+                            const box = getBoundingBoxWithPadding(data.points, featurePadding, mainCanvas.width, mainCanvas.height);
+                            const canvas = document.createElement('canvas');
+                            canvas.width = box.width;
+                            canvas.height = box.height;
+                            const ctx = canvas.getContext('2d');
+                            if (box.width > 0 && box.height > 0) {
+                                ctx.drawImage(mainCanvas, box.x, box.y, box.width, box.height, 0, 0, box.width, box.height);
+                            }
+                            return { canvas, box };
+                        });
+                        
+                        const blurPadding = overallFaceBox.width * 0.15; 
+                        const blurBox = getBoundingBoxWithPadding(
+                            [
+                                { x: overallFaceBox.x, y: overallFaceBox.y },
+                                { x: overallFaceBox.x + overallFaceBox.width, y: overallFaceBox.y + overallFaceBox.height }
+                            ], 
+                            blurPadding, mainCanvas.width, mainCanvas.height
+                        );
+                        
+                        if (blurBox.width > 0 && blurBox.height > 0) {
+                            const tempFaceCanvas = document.createElement('canvas');
+                            tempFaceCanvas.width = blurBox.width;
+                            tempFaceCanvas.height = blurBox.height;
+                            const tempFaceCtx = tempFaceCanvas.getContext('2d');
+                            tempFaceCtx.drawImage(mainCanvas, blurBox.x, blurBox.y, blurBox.width, blurBox.height, 0, 0, blurBox.width, blurBox.height);
+                            
+                            mainCtx.filter = skinSmoothBlurAmount;
+                            mainCtx.drawImage(tempFaceCanvas, 0, 0, blurBox.width, blurBox.height, blurBox.x, blurBox.y, blurBox.width, blurBox.height);
+                            mainCtx.filter = 'none';
+                        }
+
+                        for (const { canvas: featureCanvas, box: featureDrawBox } of originalFeatureCanvases) {
+                            if (featureCanvas.width > 0 && featureCanvas.height > 0) {
+                                mainCtx.drawImage(featureCanvas, 0, 0, featureCanvas.width, featureCanvas.height, featureDrawBox.x, featureDrawBox.y, featureDrawBox.width, featureDrawBox.height);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Lỗi nhận diện khuôn mặt hoặc landmarks:", error);
+                const fallbackBlur = getFilterCSSText('beauty', true); 
+                if (fallbackBlur && fallbackBlur !== 'none') {
+                    const tempCopy = document.createElement('canvas'); tempCopy.width=mainCanvas.width; tempCopy.height=mainCanvas.height;
+                    const tempCtxCopy = tempCopy.getContext('2d'); tempCtxCopy.drawImage(mainCanvas,0,0);
+                    mainCtx.clearRect(0,0,mainCanvas.width, mainCanvas.height);
+                    mainCtx.filter = fallbackBlur; 
+                    mainCtx.drawImage(tempCopy,0,0);
+                    mainCtx.filter = 'none';
+                }
+            }
+        } else {
+            console.warn("FaceAPI models (detector hoặc landmarks) chưa sẵn sàng. Sử dụng beauty filter đơn giản hơn.");
+            const fallbackBlur = getFilterCSSText('beauty', true);
+            if (fallbackBlur && fallbackBlur !== 'none') {
+                const tempCopy = document.createElement('canvas'); tempCopy.width=mainCanvas.width; tempCopy.height=mainCanvas.height;
+                const tempCtxCopy = tempCopy.getContext('2d'); tempCtxCopy.drawImage(mainCanvas,0,0);
+                mainCtx.clearRect(0,0,mainCanvas.width, mainCanvas.height);
+                mainCtx.filter = fallbackBlur;
+                mainCtx.drawImage(tempCopy,0,0);
+                mainCtx.filter = 'none';
+            }
+        }
+    } else if (currentFilter !== 'none') {
+        const filterCSSToApply = getFilterCSSText(currentFilter, false); 
+        if (filterCSSToApply !== 'none') {
+            const tempCopyCanvas = document.createElement('canvas');
+            tempCopyCanvas.width = mainCanvas.width;
+            tempCopyCanvas.height = mainCanvas.height;
+            const tempCopyCtx = tempCopyCanvas.getContext('2d');
+            tempCopyCtx.drawImage(mainCanvas, 0, 0); 
+            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            mainCtx.filter = filterCSSToApply;
+            mainCtx.drawImage(tempCopyCanvas, 0, 0); 
+            mainCtx.filter = 'none';
+        }
+    }
+    
+    video.style.filter = originalVideoStyleFilter; 
+    const rawPhotoDataUrl = mainCanvas.toDataURL('image/jpeg', 0.95); 
+    
     if (inCollageMode && collagePhotos.length < currentCollageMode.totalPhotos) {
-        collagePhotos.push(rawPhotoDataUrl); 
-        updateGrid5Preview();
+        collagePhotos.push(rawPhotoDataUrl);
+        updateGrid5Preview(); 
         updateCollageStatusDisplay();
         toggleCollageCaptureUI(true);
 
         if (collagePhotos.length === currentCollageMode.totalPhotos) {
-            generateAndDisplayCollage();
+            generateAndDisplayCollage(); 
         }
     }
 }
@@ -507,7 +690,6 @@ function executeSnapshot() {
 async function generateAndDisplayCollage() {
     const { totalPhotos, columns, aspectRatio } = currentCollageMode;
     if (collagePhotos.length < totalPhotos) {
-        // console.warn("Not enough photos to generate collage.");
         return;
     }
 
@@ -564,7 +746,7 @@ async function generateAndDisplayCollage() {
         const img = new Image();
         img.onload = () => resolve(img); 
         img.onerror = (err) => { console.error("Lỗi tải ảnh cho collage", err); reject(err); };
-        img.src = dataUrl;
+        img.src = dataUrl; 
     }));
 
     try {
@@ -588,21 +770,15 @@ async function generateAndDisplayCollage() {
             collageOutputCtx.fillRect(slotX + photoMargin, slotY + photoMargin, contentWidth, contentHeight);
 
             if (img && photoDisplayWidth > 0 && photoDisplayHeight > 0) {
-                collageOutputCtx.save();
-                collageOutputCtx.translate(photoX + photoDisplayWidth, photoY);
-                collageOutputCtx.scale(-1, 1); 
-                drawImageCover(collageOutputCtx, img, 0, 0, photoDisplayWidth, photoDisplayHeight);
-                collageOutputCtx.restore(); 
+                drawImageCover(collageOutputCtx, img, photoX, photoY, photoDisplayWidth, photoDisplayHeight);
             }
         }
     } catch (error) {
         console.error("Lỗi tải một hoặc nhiều ảnh cho collage:", error);
     }
     
-    // >>> ĐẢM BẢO RESET TRANSFORM TRƯỚC KHI VẼ TEXT <<<
     collageOutputCtx.setTransform(1, 0, 0, 1, 0, 0); 
 
-    // --- TEXT DRAWING ---
     const currentBgIsDark = userSelectedCustomBgImage ? false : (activeCollageColorTheme === 'pink' || activeCollageColorTheme === 'navy' || activeCollageColorTheme === 'green' || activeCollageColorTheme === 'coral' || activeCollageColorTheme === 'gold');
     const textColor = currentBgIsDark ? '#F6DCAC' : '#01204E';
     const textShadowColor = currentBgIsDark ? 'rgba(1, 32, 78, 0.7)' : 'rgba(250, 169, 104, 0.5)';
@@ -667,11 +843,6 @@ function setActiveCollageTheme(themeName, customColorValue = null) {
     if (themeColorPicker) themeColorPicker.value = appliedColor;
     if (customColorPickerButton) customColorPickerButton.style.borderColor = appliedColor;
 
-    if (userSelectedCustomBgImage && activeCollageColorTheme !== 'custom_bg') {
-        userSelectedCustomBgImage = null;
-        if (customBgPreviewImage) customBgPreviewImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E";
-        if (clearCustomBgBtn) clearCustomBgBtn.style.display = 'none';
-    }
     updateGrid5Preview();
 }
 
@@ -702,23 +873,41 @@ function drawImageCover(ctx, img, x, y, w, h) {
 function addPhotoToGalleryDisplay(imgDataUrl) {
     const photoContainer = document.createElement('div');
     photoContainer.className = 'photo-container';
+    
     const imgEl = document.createElement('img');
     imgEl.src = imgDataUrl; 
     imgEl.className = 'captured-photo';
     imgEl.alt = "Ảnh đã chụp hoặc Collage";
-    imgEl.addEventListener('click', () => {
+    // Removed: imgEl.addEventListener('click', () => { ... view logic ... });
+
+    const actionsContainer = document.createElement('div');
+    actionsContainer.className = 'photo-actions';
+
+    // View Button
+    const viewBtnEl = document.createElement('button');
+    viewBtnEl.className = 'view-btn win95-button';
+    viewBtnEl.innerHTML = 'Xem'; // "View"
+    viewBtnEl.title = "Xem ảnh này"; // "View this photo"
+    viewBtnEl.type = "button";
+    viewBtnEl.addEventListener('click', (e) => {
+        e.stopPropagation();
         const newTab = window.open();
         if (newTab) {
             newTab.document.body.style.margin = '0'; 
             newTab.document.body.style.backgroundColor = '#333'; 
             newTab.document.body.innerHTML = `<img src="${imgDataUrl}" style="max-width: 100%; max-height: 100vh; margin: auto; display: block;">`;
             newTab.document.title = "Xem trước ảnh";
-        } else { alert('Vui lòng cho phép pop-up để xem ảnh.'); }
+        } else { 
+            alert('Vui lòng cho phép pop-up để xem ảnh.'); 
+        }
     });
-    const deleteBtnEl = document.createElement('div'); 
-    deleteBtnEl.className = 'delete-btn';
-    deleteBtnEl.innerHTML = 'Delete'; 
-    deleteBtnEl.title = "Delete this photo";
+    
+    // Delete Button
+    const deleteBtnEl = document.createElement('button'); 
+    deleteBtnEl.className = 'delete-btn win95-button';
+    deleteBtnEl.innerHTML = 'Xóa'; 
+    deleteBtnEl.title = "Xóa ảnh này"; // "Delete this photo"
+    deleteBtnEl.type = "button";
     deleteBtnEl.addEventListener('click', (e) => {
         e.stopPropagation(); 
         photoContainer.remove();
@@ -729,8 +918,13 @@ function addPhotoToGalleryDisplay(imgDataUrl) {
         }
         updateGrid5Preview(); 
     });
+
+    actionsContainer.appendChild(viewBtnEl);
+    actionsContainer.appendChild(deleteBtnEl);
+    
     photoContainer.appendChild(imgEl);
-    photoContainer.appendChild(deleteBtnEl);
+    photoContainer.appendChild(actionsContainer);
+
     if (photoGallery) photoGallery.prepend(photoContainer); 
     photosInGalleryCount = photoGallery.children.length;
     if (photosInGalleryCount > 0) {
@@ -798,15 +992,17 @@ function updateWin95Time() {
 }
 
 // --- Event Listeners Setup ---
-function setupEventListeners() {
+function setupEventListeners() { 
     if (captureBtn) captureBtn.addEventListener('click', () => capturePhotoWithFlash(false));
     if (timerBtn) timerBtn.addEventListener('click', () => capturePhotoWithFlash(true));
     if (downloadBtn) downloadBtn.addEventListener('click', downloadAllPhotos);
     if (clearBtn) clearBtn.addEventListener('click', clearAllPhotos);
 
-    const normalFilterButton = document.querySelector('.filter-option[data-filter="none"]');
-    if (normalFilterButton) normalFilterButton.addEventListener('click', () => applyFilterToVideo('none'));
-    if (grayscaleFilterStandalone) grayscaleFilterStandalone.addEventListener('click', () => applyFilterToVideo('grayscale'));
+    document.querySelectorAll('.filter-option[data-filter]').forEach(button => { 
+        button.addEventListener('click', () => { 
+            applyFilterToVideo(button.dataset.filter); 
+        });
+    });
 
     const collageLayoutButtonsConfig = {
         'start1x1': { photos: 1, cols: 1 }, 'start1x2': { photos: 2, cols: 1 }, 
@@ -824,8 +1020,6 @@ function setupEventListeners() {
                 const newLayoutCols = parseInt(selectedButton.dataset.cols);
                 startCollageMode(newLayoutPhotos, newLayoutCols, false);
             });
-        } else {
-            // console.warn(`Layout button with id '${id}' not found.`);
         }
     }
 
@@ -898,8 +1092,8 @@ function setupEventListeners() {
                 }
             }
         });
-        setTimeout(() => {
-            if (liveCollagePreviewCanvas.offsetParent !== null) {
+        setTimeout(() => { 
+            if (liveCollagePreviewCanvas.offsetParent !== null) { 
                  resizeObserver.observe(liveCollagePreviewCanvas);
             }
         }, 100);
